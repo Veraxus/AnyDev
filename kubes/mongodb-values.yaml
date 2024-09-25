@@ -1,0 +1,13 @@
+# mongodb-values.yaml
+# Default values for mongo
+auth:
+  enabled: true
+  rootUsername: root
+  rootPassword: root_password
+  username: user
+  password: user_password
+  database: my_database
+
+service:
+  type: NodePort
+  nodePort: 27017  # Port to expose MongoDB on the host machine

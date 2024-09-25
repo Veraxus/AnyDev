@@ -1,0 +1,9 @@
+# redis-values.yaml
+# Default values for redis
+auth:
+  enabled: false
+
+master:
+  service:
+    type: NodePort
+    nodePort: 6379  # Port to expose Redis on the host machine
