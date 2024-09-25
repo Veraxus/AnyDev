@@ -35,7 +35,7 @@ Note: Currently only MacOS is supported. Additional platforms coming soon.
 
 1. Make a copy of `.env.example` and name it `.env`
 2. Update the values in `.env`
-3. Starting the services
+3. Starting the services...
    ```bash
    docker compose --profile lamp up -d
    ```

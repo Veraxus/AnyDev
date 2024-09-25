@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   # Reverse Proxy
@@ -41,7 +39,7 @@ services:
     volumes:
       - ${HOME}/.anydev/mongodb:/data/db
     networks:
-      - shared
+      - anydev
     profiles:
       - mongo
 
@@ -51,7 +49,7 @@ services:
     container_name: redis_shared
     restart: unless-stopped
     networks:
-      - shared
+      - anydev
     profiles:
       - redis
 
@@ -60,13 +58,12 @@ services:
     container_name: memcached_shared
     restart: unless-stopped
     networks:
-      - shared
+      - anydev
     profiles:
       - memcached
 
 networks:
-  shared:
-    name: anydev
+  anydev:
     driver: bridge
 
 volumes:
