@@ -1,5 +1,0 @@
-# memcached-values.yaml
-# Default values for memcached
-service:
-  type: NodePort
-  nodePort: 11211  # Port to expose Memcached on the host machine

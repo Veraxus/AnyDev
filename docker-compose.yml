@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+
+  # Reverse Proxy
+  traefik:
+    image: traefik:v2.9
+    container_name: anydev-traefik
+    restart: unless-stopped
+    command:
+      - "--configFile=/traefik.yml"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${HOME}/.anydev/certs:/certs:ro
+      - ./traefik.yml:/traefik.yml:ro
+    networks:
+      - anydev
+
+  # Databases
+  mysql:
+    image: mysql:8
+    container_name: anydev-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ${HOME}/.anydev/mysql:/var/lib/mysql
+    networks:
+      - anydev
+    profiles:
+      - lamp
+      - mysql
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo_shared
+    restart: unless-stopped
+    volumes:
+      - ${HOME}/.anydev/mongodb:/data/db
+    networks:
+      - shared
+    profiles:
+      - mongo
+
+# Caches
+  redis:
+    image: redis:latest
+    container_name: redis_shared
+    restart: unless-stopped
+    networks:
+      - shared
+    profiles:
+      - redis
+
+  memcached:
+    image: memcached:latest
+    container_name: memcached_shared
+    restart: unless-stopped
+    networks:
+      - shared
+    profiles:
+      - memcached
+
+networks:
+  shared:
+    name: anydev
+    driver: bridge
+
+volumes:
+  mysql_data:
