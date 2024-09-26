@@ -30,13 +30,34 @@ Note: Currently only MacOS is supported. Additional platforms coming soon.
    ```bash
    brew install mkcert nss
    ```
-4. Generate CA certificates:  
+4. Generate CA certificates & move to anydev:  
    ```bash
-      export CAROOT=~/.anydev/certs/ mkcert --install && \
+   mkcert --install && \
+   mkdir -p ~/.anydev/certs/ && \
+   cp "$(mkcert -CAROOT)"/* ~/.anydev/certs/
    ```
 5. Generate wildcard certificates for local domains:  
    ```bash
-      mkcert -key-file "~/.anydev/certs/_wildcard.site.local-key.pem" -cert-file "~/.anydev/certs/_wildcard.site.local.pem"  "*.site.local"
+   mkcert -key-file ~/.anydev/certs/_wildcard.site.test-key.pem \
+          -cert-file ~/.anydev/certs/_wildcard.site.test.pem  \
+          "*.site.test"
+   ```
+6. Configure resolver:
+   ```bash
+   sudo mkdir -p /etc/resolver && \
+   echo "nameserver 127.0.0.1
+   port 53535" | sudo tee /etc/resolver/site.test
+   ```
+7. Start the support services:
+   ```bash
+   docker compose up -d
+   ```
+   Also note that you can use profiles to start multiple specific services or stacks:
+   ```bash
+   docker compose \
+      --profile mysql \
+      --profile redis \
+      up -d
    ```
 
 ## Starting Shared Services
@@ -52,4 +73,13 @@ Note: Currently only MacOS is supported. Additional platforms coming soon.
 
 ## Starting An Application
 
-1. Make a copy of a template directory or create your own.
+1. Make a copy of your preferred template directory anywhere on your system.
+2. Create a `.env` using `.env.example` as a guide.
+3. Run `docker compose up -d`
+4. Start building your project to the ./src directory!
+
+## FAQ
+
+### Q. Why does dnsmasq use port 5353
+**A.** DNS normally uses port 53, but on some machines there can be a conflict (or a Docker bug) that can cause problems, and troubleshooting this can require serious technical chops. Instead, AnyDev uses 5353 to avoid conflicts and ensure setup remains easy.
+

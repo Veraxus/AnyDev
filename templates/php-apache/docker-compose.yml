@@ -1,20 +1,21 @@
 services:
   web:
-    container_name: anydev-site-${HOSTNAME}
+    container_name: ${HOSTNAME}.site.test
     build:
       context: .
     volumes:
       - ./src:/var/www/html
-      - ./conf.d:/etc/apache2/conf.d
-      - ./xdebug-traces:/var/www/xdebug-traces
+      - ./server/conf.d:/etc/apache2/conf.d
+      - ./server/php.ini:/usr/local/etc/php/php.ini
+      - ./reports:/var/www/reports
     env_file:
       - .env
     environment:
       - APACHE_DOCUMENT_ROOT=/var/www/html
-      - VIRTUAL_HOST=${HOSTNAME}.site.local
+      - VIRTUAL_HOST=${HOSTNAME}.site.test
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}.site.local`)"
+      - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}.site.test`)"
       - "traefik.http.routers.whoami.entrypoints=web"
     expose:
       - "80"

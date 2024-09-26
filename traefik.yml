@@ -15,8 +15,8 @@ providers:
 # Traefik needs to have our local site certs
 tls:
   certificates:
-    - certFile: "/certs/_wildcard.site.local.pem"
-      keyFile: "/certs/_wildcard.site.local-key.pem"
+    - certFile: "/certs/_wildcard.site.test.pem"
+      keyFile: "/certs/_wildcard.site.test-key.pem"
 
 # More aggressive logging for local dev
 log:
