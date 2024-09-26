@@ -8,12 +8,14 @@ services:
     cap_add:
       - NET_ADMIN
     command:
+      - "--log-debug"
       - "--log-facility=-"
-      - "--server=8.8.8.8"
-      - "--address=/.site.test/127.0.0.1"
+      - "--server=8.8.8.8" # Use Google DNS by default
+      - "--server=8.8.4.4" # Use Google DNS by default
+      - "--address=/site.test/127.0.0.1"
     ports:
-      - "53535:53535/tcp"
-      - "53535:53535/udp"
+      - "53:53/tcp"
+      - "53:53/udp"
     networks:
       - anydev
 
@@ -23,14 +25,15 @@ services:
     container_name: anydev-traefik
     restart: unless-stopped
     command:
-      - "--configFile=/traefik.yml"
+      - "--configFile=/traefik.static.yml"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${HOME}/.anydev/certs:/certs:ro
-      - ./traefik.yml:/traefik.yml:ro
+      - ./traefik.static.yml:/traefik.static.yml:ro
+      - ./traefik.dynamic.yml:/traefik.dynamic.yml:ro
     networks:
       - anydev
 

@@ -15,8 +15,11 @@ services:
       - VIRTUAL_HOST=${HOSTNAME}.site.test
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}.site.test`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.php.rule=Host(`${HOSTNAME}.site.test`)"
+      - "traefik.http.routers.php.entrypoints=web"  # HTTP entry point
+      - "traefik.http.routers.php-secure.rule=Host(`${HOSTNAME}.site.test`)"  # HTTPS entry point
+      - "traefik.http.routers.php-secure.entrypoints=websecure"  # Secure (i.e. HTTPS) entry point
+      - "traefik.http.routers.php-secure.tls=true"
     expose:
       - "80"
     networks:

@@ -1,0 +1,14 @@
+# ===============================
+# Traefik runtime configuration
+# -------------------------------
+# i.e. certs, routes, etc
+# ===============================
+tls:
+  certificates:
+    - certFile: "/certs/_wildcard.site.test.pem"
+      keyFile: "/certs/_wildcard.site.test-key.pem"
+  stores:
+    default:
+      defaultCertificate:
+        certFile: "/certs/_wildcard.site.test.pem"
+        keyFile: "/certs/_wildcard.site.test-key.pem"

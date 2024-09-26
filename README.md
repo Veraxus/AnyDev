@@ -40,13 +40,13 @@ Note: Currently only MacOS is supported. Additional platforms coming soon.
    ```bash
    mkcert -key-file ~/.anydev/certs/_wildcard.site.test-key.pem \
           -cert-file ~/.anydev/certs/_wildcard.site.test.pem  \
-          "*.site.test"
+          "*.site.test" \
+   && chmod 644 ~/.anydev/certs/*
    ```
 6. Configure resolver:
    ```bash
    sudo mkdir -p /etc/resolver && \
-   echo "nameserver 127.0.0.1
-   port 53535" | sudo tee /etc/resolver/site.test
+   echo "nameserver 127.0.0.1\nport 53" | sudo tee /etc/resolver/site.test
    ```
 7. Start the support services:
    ```bash
@@ -78,8 +78,10 @@ Note: Currently only MacOS is supported. Additional platforms coming soon.
 3. Run `docker compose up -d`
 4. Start building your project to the ./src directory!
 
-## FAQ
+## FAQ & Troubleshooting
 
-### Q. Why does dnsmasq use port 5353
-**A.** DNS normally uses port 53, but on some machines there can be a conflict (or a Docker bug) that can cause problems, and troubleshooting this can require serious technical chops. Instead, AnyDev uses 5353 to avoid conflicts and ensure setup remains easy.
+### Q. Who are my *.site.test domains failing to resolve?
+A. Chances are, another resolver is intercepting your requests before they make it to the one we created for AnyDev. Some ISP-issued routers may intercept and serve all requests, even reserved ones like `.test`. To confirm this, use `scutil --dns` to check the resolver order and `dig site.test` to see which server is handling it (it's probably the first one). You may need to manually change your system settings (or network device) to prioritize 127.0.0.1.
 
+### Q. I'm getting and error about port 53 already being in use.
+A. First, find out what might already be using it with: `sudo lsof -i :53`

@@ -1,3 +1,9 @@
+# ===============================
+# Traefik static configuration
+# -------------------------------
+# i.e. initialization only
+# ===============================
+
 # Traefik will monitor these ports
 entryPoints:
   web:
@@ -11,12 +17,9 @@ providers:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
     network: anydev
-
-# Traefik needs to have our local site certs
-tls:
-  certificates:
-    - certFile: "/certs/_wildcard.site.test.pem"
-      keyFile: "/certs/_wildcard.site.test-key.pem"
+  file:
+    filename: "/traefik.dynamic.yml"
+    watch: true
 
 # More aggressive logging for local dev
 log:
