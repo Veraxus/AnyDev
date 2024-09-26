@@ -32,8 +32,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${HOME}/.anydev/certs:/certs:ro
-      - ./traefik.static.yml:/traefik.static.yml:ro
-      - ./traefik.dynamic.yml:/traefik.dynamic.yml:ro
+      - ./services/traefik.static.yml:/traefik.static.yml:ro
+      - ./services/traefik.dynamic.yml:/traefik.dynamic.yml:ro
     networks:
       - anydev
 
