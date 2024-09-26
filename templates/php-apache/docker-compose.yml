@@ -1,0 +1,28 @@
+services:
+  web:
+    container_name: anydev-site-${HOSTNAME}
+    build:
+      context: .
+    volumes:
+      - ./src:/var/www/html
+      - ./conf.d:/etc/apache2/conf.d
+      - ./xdebug-traces:/var/www/xdebug-traces
+    env_file:
+      - .env
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+      - VIRTUAL_HOST=${HOSTNAME}.site.local
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}.site.local`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+    expose:
+      - "80"
+    networks:
+      - anydev
+
+networks:
+  anydev:
+    name: anydev
+    driver: bridge
+    external: true

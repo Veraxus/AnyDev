@@ -1,6 +1,23 @@
 services:
 
-  # Reverse Proxy
+  # DNS Resolver (Required)
+  dnsmasq:
+    image: 4km3/dnsmasq:2.85-r2
+    container_name: anydev-dnsmasq
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    command:
+      - "--log-facility=-"
+      - "--server=8.8.8.8"
+      - "--address=/.site.local/127.0.0.1"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    networks:
+      - anydev
+
+  # Reverse Proxy (required)
   traefik:
     image: traefik:v2.9
     container_name: anydev-traefik
@@ -16,6 +33,10 @@ services:
       - ./traefik.yml:/traefik.yml:ro
     networks:
       - anydev
+
+  # ===========================================
+  # Profile-Specific Services
+  # ===========================================
 
   # Databases
   mysql:
@@ -34,7 +55,7 @@ services:
 
   mongo:
     image: mongo:latest
-    container_name: mongo_shared
+    container_name: anydev-mongo
     restart: unless-stopped
     volumes:
       - ${HOME}/.anydev/mongodb:/data/db
@@ -46,7 +67,7 @@ services:
 # Caches
   redis:
     image: redis:latest
-    container_name: redis_shared
+    container_name: anydev-redis
     restart: unless-stopped
     networks:
       - anydev
@@ -55,7 +76,7 @@ services:
 
   memcached:
     image: memcached:latest
-    container_name: memcached_shared
+    container_name: anydev-memcached
     restart: unless-stopped
     networks:
       - anydev
@@ -64,6 +85,7 @@ services:
 
 networks:
   anydev:
+    name: anydev
     driver: bridge
 
 volumes:

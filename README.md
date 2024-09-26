@@ -22,20 +22,34 @@ Note: Currently only MacOS is supported. Additional platforms coming soon.
    ```bash
    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
    ```
-2. Install Docker
+2. Install Docker:  
    ```bash
    brew install --cask docker
    ```
-3. Install Mkcert & NSS:  
+3. Install mkcert & nss:  
    ```bash
    brew install mkcert nss
    ```
+4. Generate CA certificates:  
+   ```bash
+      export CAROOT=~/.anydev/certs/ mkcert --install && \
+   ```
+5. Generate wildcard certificates for local domains:  
+   ```bash
+      mkcert -key-file "~/.anydev/certs/_wildcard.site.local-key.pem" -cert-file "~/.anydev/certs/_wildcard.site.local.pem"  "*.site.local"
+   ```
 
-## Starting
+## Starting Shared Services
 
-1. Make a copy of `.env.example` and name it `.env`
-2. Update the values in `.env`
-3. Starting the services...
+1. Create a .env file...
+   ```bash
+   cp .env.example .env
+   ```
+2. Starting the services (LAMP stack)...
    ```bash
    docker compose --profile lamp up -d
    ```
+
+## Starting An Application
+
+1. Make a copy of a template directory or create your own.

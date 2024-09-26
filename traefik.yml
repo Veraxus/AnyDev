@@ -1,15 +1,27 @@
+# Traefik will monitor these ports
 entryPoints:
   web:
     address: ":80"
   websecure:
     address: ":443"
 
+# Traefik needs to use Docker. Don't automatically expose containers.
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
+    network: anydev
 
+# Traefik needs to have our local site certs
 tls:
   certificates:
-    - certFile: "/certs/_wildcard.site.test.pem"
-      keyFile: "/certs/_wildcard.site.test-key.pem"
+    - certFile: "/certs/_wildcard.site.local.pem"
+      keyFile: "/certs/_wildcard.site.local-key.pem"
+
+# More aggressive logging for local dev
+log:
+  level: DEBUG
+
+# Allow unrestricted access to local Traefik dashboard
+api:
+  insecure: true
