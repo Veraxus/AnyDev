@@ -52,9 +52,28 @@ services:
       - ${HOME}/.anydev/mysql:/var/lib/mysql
     networks:
       - anydev
+    labels:
+      - type=db
+      - type=relational-db
     profiles:
-      - lamp
       - mysql
+      - lamp
+
+  postgres:
+    image: postgres:13
+    container_name: anydev-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${HOME}/.anydev/postgresql:/var/lib/postgresql/data
+    networks:
+      - anydev
+    labels:
+      - type=db
+      - type=relational-db
+    profiles:
+      - postgres
 
   mongo:
     image: mongo:8.0
@@ -64,6 +83,9 @@ services:
       - ${HOME}/.anydev/mongodb:/data/db
     networks:
       - anydev
+    labels:
+      - type=db
+      - type=nosql
     profiles:
       - mongo
 
@@ -74,6 +96,9 @@ services:
     restart: unless-stopped
     networks:
       - anydev
+    labels:
+      - type=caching
+      - type=kvs
     profiles:
       - redis
 
@@ -83,13 +108,22 @@ services:
     restart: unless-stopped
     networks:
       - anydev
+    labels:
+      - type=caching
+      - type=kvs
     profiles:
       - memcached
+
+# TODO: elasticsearch
+# TODO: mariadb
+# TODO: selenium
+# TODO: Prometheus, Grafana++?
+# TODO: Kibana?
+# TODO: rabbitmq?
+# TODO: smtp/email catching?
+# TODO: HC Vault?
 
 networks:
   anydev:
     name: anydev
     driver: bridge
-
-volumes:
-  mysql_data:

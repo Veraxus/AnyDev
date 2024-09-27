@@ -1,10 +1,31 @@
-import click
+import typer
+import questionary
+from anydev.commands import project
+from anydev.core.command_alias_group import CommandAliasGroup
+from setuptools.command.alias import alias
+
+# Initialize CLI
+main = typer.Typer(
+    help="AnyDev CLI - Easily create and manage development environments.",
+    no_args_is_help=True,
+    cls=CommandAliasGroup
+)
 
 
-@click.command()
-def main():
-    click.echo("Hello world!")
+@main.command("i | install")
+def install():
+    """Check your system for prerequisites and optionally install them."""
+    print('Not yet implemented.')
 
 
-if __name__ == "__main__":
+@main.command("c | configure")
+def configure():
+    """Add or remove services from your environments."""
+    print('Not yet implemented.')
+
+
+# Sub-commands
+main.add_typer(project.cmd, name="p | project")
+
+if __name__ == '__main__':
     main()

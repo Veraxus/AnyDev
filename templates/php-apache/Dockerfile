@@ -31,6 +31,7 @@ RUN apt-get update \
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \
     && a2enmod env \
+    && a2enmod expires \
     && a2enmod rewrite \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

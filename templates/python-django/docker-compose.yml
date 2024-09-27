@@ -1,0 +1,31 @@
+services:
+  web:
+    container_name: ${HOSTNAME}.site.test
+    image: python:3.10
+    volumes:
+      - ./src:/app
+      - ./reports:/app/reports
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=myproject.settings
+      - VIRTUAL_HOST=${HOSTNAME}.site.test
+    working_dir: /app
+    command: bash -c "pip install -r requirements.txt && python manage.py runserver 0.0.0.0:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django-${HOSTNAME}.rule=Host(`${HOSTNAME}.site.test`)"
+      - "traefik.http.routers.django-${HOSTNAME}.entrypoints=web"
+      - "traefik.http.routers.django-${HOSTNAME}-secure.rule=Host(`${HOSTNAME}.site.test`)"
+      - "traefik.http.routers.django-${HOSTNAME}-secure.entrypoints=websecure"
+      - "traefik.http.routers.django-${HOSTNAME}-secure.tls=true"
+    expose:
+      - "8000"  # Django's default port
+    networks:
+      - anydev
+
+networks:
+  anydev:
+    name: anydev
+    driver: bridge
+    external: true
