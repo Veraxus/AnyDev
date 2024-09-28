@@ -1,6 +1,9 @@
 import typer
 import subprocess
+
 from anydev.core.command_alias_group import CommandAliasGroup
+
+from anydev.core.project_helpers import is_running, validate_project
 
 # Initialize Typer for the project sub-commands
 cmd = typer.Typer(
@@ -18,6 +21,7 @@ def create():
 
 @cmd.command('l | list')
 @cmd.command('ls', hidden=True)
+@validate_project
 def list():
     """List all projects."""
     print('Not yet implemented.')
@@ -25,6 +29,8 @@ def list():
 
 @cmd.command('u | up')
 @cmd.command('start', hidden=True)
+@cmd.command('restart', hidden=True)
+@validate_project
 def start():
     """Start or restart an existing project."""
 
@@ -37,14 +43,16 @@ def start():
     if result.returncode != 0:
         typer.secho('Failed to start project!', err=True, fg=typer.colors.RED, bold=True)
         raise typer.Exit(code=result.returncode)
+    else:
+        typer.secho('Projected started!', err=False, fg=typer.colors.GREEN, bold=True)
 
 
 @cmd.command('d | down')
 @cmd.command('stop', hidden=True)
+@validate_project
 def stop():
     """Stop a running project."""
-    is_running = subprocess.run(['docker', 'compose', 'ps', '--format', 'json'], capture_output=True, text=True)
-    if len(is_running.stdout.strip()) > 0:
+    if is_running():
         typer.secho('Stopping project...', fg=typer.colors.YELLOW, bold=True)
         subprocess.run(['docker', 'compose', 'down'])
     else:
@@ -53,9 +61,28 @@ def stop():
 
 @cmd.command('s | shell')
 @cmd.command('sh', hidden=True)
+@validate_project
 def shell():
     """Open shell for the current project container."""
-    result = subprocess.run(['docker', 'compose', 'exec', 'web', '/bin/sh'])
+    proc_command = ['docker', 'compose', 'exec', 'app', '/bin/sh']
+    result = subprocess.run(proc_command)
     if result.returncode != 0:
-        typer.secho('', err=True, fg=typer.colors.RED, bold=True)
+        typer.secho('ERROR: Command failed: ' + ' '.join(proc_command), err=True, fg=typer.colors.RED, bold=True)
         raise typer.Exit(code=result.returncode)
+
+
+@cmd.command('g | logs')
+@cmd.command('log', hidden=True)
+@validate_project
+def logs():
+    """Tail the container logs."""
+    if is_running():
+        proc_command = ['docker', 'compose', 'logs', 'app', '-f']
+        result = subprocess.run(proc_command)
+        if result.returncode != 0:
+            typer.secho('ERROR: Command failed: ' + ' '.join(proc_command), err=True, fg=typer.colors.RED,
+                        bold=True)
+            raise typer.Exit(code=result.returncode)
+    else:
+        typer.secho('The project is not currently running.', err=True, fg=typer.colors.RED, bold=True)
+        raise typer.Exit(code=1)

@@ -1,5 +1,5 @@
 services:
-  web:
+  app:
     container_name: ${HOSTNAME}.site.test
     build:
       context: .

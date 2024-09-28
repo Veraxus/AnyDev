@@ -10,8 +10,9 @@ Create portable, containerized local development environments for any stack.
 * It must be extensible to easily add new technologies or stacks.
 
 ## Architecture Considerations
-* mkcert + nss - Self-signed certificates for local HTTPS
-* Traefik - Application proxy for routing, SSL termination, etc
+* mkcert + nss - Self-signed certificates for local HTTPS. Run on host machine.
+* Traefik - Application proxy for routing, SSL termination, etc.
+* dnsmasq - DNS for AnyDev's *.site.test domain. Use resolver on host to route traffic.
 
 ## Setup
 Note: Currently only MacOS is supported. Additional platforms coming soon.

@@ -26,6 +26,7 @@ def configure():
 
 # Sub-commands
 main.add_typer(project.cmd, name="p | project")
+main.add_typer(project.cmd, name="proj", hidden=True)
 
 if __name__ == '__main__':
     main()
