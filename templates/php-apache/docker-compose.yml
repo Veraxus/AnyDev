@@ -4,9 +4,15 @@ services:
     build:
       context: .
     volumes:
+      # Site/application files
       - ./src:/var/www/html
-      - ./server/conf.d:/etc/apache2/conf.d
+      # Apache configurations
+      - ./server/apache/app.conf:/etc/apache2/sites-enabled/app.conf
+      - ./server/apache/apache2.conf:/etc/apache2/apache2.conf
+      - ./server/apache/conf.d:/etc/apache2/conf.d
+      # PHP ini
       - ./server/php.ini:/usr/local/etc/php/php.ini
+      # Profiling outputs, etc
       - ./reports:/var/www/reports
     env_file:
       - .env

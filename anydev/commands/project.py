@@ -2,8 +2,8 @@ import typer
 import subprocess
 
 from anydev.core.command_alias_group import CommandAliasGroup
-
 from anydev.core.project_helpers import is_running, validate_project
+from anydev.core.project_helpers import open_shell
 
 # Initialize Typer for the project sub-commands
 cmd = typer.Typer(
@@ -29,7 +29,7 @@ def list():
 
 @cmd.command('u | up')
 @cmd.command('start', hidden=True)
-@cmd.command('restart', hidden=True)
+@cmd.command('r | restart', hidden=True)
 @validate_project
 def start():
     """Start or restart an existing project."""
@@ -59,16 +59,19 @@ def stop():
         typer.secho('Project is not running.', err=True, fg=typer.colors.YELLOW, bold=True)
 
 
+@cmd.command('b | bash')
+@validate_project
+def bash():
+    """Open bash shell for the current project container."""
+    open_shell('/bin/bash')
+
+
 @cmd.command('s | shell')
 @cmd.command('sh', hidden=True)
 @validate_project
 def shell():
-    """Open shell for the current project container."""
-    proc_command = ['docker', 'compose', 'exec', 'app', '/bin/sh']
-    result = subprocess.run(proc_command)
-    if result.returncode != 0:
-        typer.secho('ERROR: Command failed: ' + ' '.join(proc_command), err=True, fg=typer.colors.RED, bold=True)
-        raise typer.Exit(code=result.returncode)
+    """Open sh shell for the current project container."""
+    open_shell('/bin/sh')
 
 
 @cmd.command('g | logs')

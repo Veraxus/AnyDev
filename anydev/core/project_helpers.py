@@ -67,3 +67,13 @@ def validate_project(f):
             raise typer.Exit(code=1)
 
     return wrapper
+
+
+def open_shell(shell_command: str):
+    """Open shell for the current project container."""
+    proc_command = ['docker', 'compose', 'exec', 'app', shell_command]
+    result = subprocess.run(proc_command)
+    if result.returncode != 0:
+        typer.secho('ERROR: Command failed: ' + ' '.join(proc_command),
+                    err=True, fg=typer.colors.RED, bold=True)
+        raise typer.Exit(code=result.returncode)
