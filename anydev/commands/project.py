@@ -4,6 +4,7 @@ import subprocess
 from anydev.core.command_alias_group import CommandAliasGroup
 from anydev.core.project_helpers import is_running, validate_project
 from anydev.core.project_helpers import open_shell
+from anydev.core.project_helpers import restart_composition
 
 # Initialize Typer for the project sub-commands
 cmd = typer.Typer(
@@ -33,18 +34,7 @@ def list():
 @validate_project
 def start():
     """Start or restart an existing project."""
-
-    # Stop if already running
-    stop()
-
-    # Start up
-    typer.secho('Starting project...', fg=typer.colors.YELLOW, bold=True)
-    result = subprocess.run(['docker', 'compose', 'up', '-d'])
-    if result.returncode != 0:
-        typer.secho('Failed to start project!', err=True, fg=typer.colors.RED, bold=True)
-        raise typer.Exit(code=result.returncode)
-    else:
-        typer.secho('Projected started!', err=False, fg=typer.colors.GREEN, bold=True)
+    restart_composition()
 
 
 @cmd.command('d | down')
@@ -59,19 +49,17 @@ def stop():
         typer.secho('Project is not running.', err=True, fg=typer.colors.YELLOW, bold=True)
 
 
-@cmd.command('b | bash')
+@cmd.command('t | terminal')
 @validate_project
-def bash():
-    """Open bash shell for the current project container."""
-    open_shell('/bin/bash')
-
-
-@cmd.command('s | shell')
-@cmd.command('sh', hidden=True)
-@validate_project
-def shell():
-    """Open sh shell for the current project container."""
-    open_shell('/bin/sh')
+def terminal(
+        shell_command: str = typer.Argument(
+            "/bin/sh",
+            help="Type of terminal/shell to open (e.g., sh, bash, zsh, etc.)"
+        )
+):
+    """Open command for the current project container."""
+    typer.secho(f"Opening interactive shell with {shell_command}", err=True, fg=typer.colors.YELLOW, bold=True)
+    open_shell(shell_command)
 
 
 @cmd.command('g | logs')

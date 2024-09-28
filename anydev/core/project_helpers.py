@@ -1,9 +1,10 @@
 import os
 import subprocess
-from functools import wraps
-
 import typer
+
+from functools import wraps
 from dotenv import load_dotenv, dotenv_values
+from commands.project import stop
 
 
 def is_running():
@@ -77,3 +78,16 @@ def open_shell(shell_command: str):
         typer.secho('ERROR: Command failed: ' + ' '.join(proc_command),
                     err=True, fg=typer.colors.RED, bold=True)
         raise typer.Exit(code=result.returncode)
+
+
+def restart_composition():
+    # Stop if already running
+    stop()
+    # Start up
+    typer.secho('Starting project...', fg=typer.colors.YELLOW, bold=True)
+    result = subprocess.run(['docker', 'compose', 'up', '-d'])
+    if result.returncode != 0:
+        typer.secho('Failed to start project!', err=True, fg=typer.colors.RED, bold=True)
+        raise typer.Exit(code=result.returncode)
+    else:
+        typer.secho('Projected started!', err=False, fg=typer.colors.GREEN, bold=True)
