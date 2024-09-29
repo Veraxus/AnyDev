@@ -15,27 +15,35 @@ class TestProjectHelpers(unittest.TestCase):
     def test_sanitize_folder_name(self):
         # Test all allowed character types
         name = "Valid_Folder-Name 123.4"
-        self.assertEqual(self.project_helpers.sanitize_folder_name(name), name,
-                         "Folder name with valid characters should remain unchanged.")
+        self.assertEqual(
+            self.project_helpers.sanitize_folder_name(name), name,
+            "Folder name with valid characters should remain unchanged."
+        )
 
         # Test unallowed character types
         # Hammer and sickle U+262D is not an allowed character and should be replaced with underscore
         name = "Inval*id:Fol*der|Name 123.4"
         expected = "Inval_id_Fol_der_Name 123.4"
-        self.assertEqual(self.project_helpers.sanitize_folder_name(name), expected,
-                         "Folder name with invalid characters should be sanitized.")
+        self.assertEqual(
+            self.project_helpers.sanitize_folder_name(name), expected,
+            "Folder name with invalid characters should be sanitized."
+        )
 
         # Test leading/trailing spaces
         name = "  Valid Folder Name 123.4  "
         expected = "Valid Folder Name 123.4"
-        self.assertEqual(self.project_helpers.sanitize_folder_name(name), expected,
-                         "Folder name with leading/trailing spaces should be stripped.")
+        self.assertEqual(
+            self.project_helpers.sanitize_folder_name(name), expected,
+            "Folder name with leading/trailing spaces should be stripped."
+        )
 
         # Test length limit
         name = "a" * 256
         expected = "a" * 255
-        self.assertEqual(self.project_helpers.sanitize_folder_name(name), expected,
-                         "Folder name should be cut to max length.")
+        self.assertEqual(
+            self.project_helpers.sanitize_folder_name(name), expected,
+            "Folder name should be cut to max length."
+        )
 
     @patch('subprocess.run')
     def test_is_running(self, mock_subprocess):

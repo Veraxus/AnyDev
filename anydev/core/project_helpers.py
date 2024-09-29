@@ -13,10 +13,10 @@ class ProjectHelpers:
     """Helper functions for AnyDev projects."""
 
     @staticmethod
-    def is_running() -> bool:
+    def is_running(path: str = '.') -> bool:
         """Are the project containers currently running?"""
         proc_command = ['docker', 'compose', 'ps', '--format', 'json']
-        result = subprocess.run(proc_command, capture_output=True, text=True)
+        result = subprocess.run(proc_command, capture_output=True, text=True, cwd=path)
         try:
             # If running, we will get valid JSON, otherwise, empty string
             ps_output = json.loads(result.stdout)
@@ -25,15 +25,15 @@ class ProjectHelpers:
             return False
 
     @staticmethod
-    def is_project() -> bool:
+    def is_project(path: str = '.') -> bool:
         """Check if the current directory is an AnyDev project."""
 
         # Check for .env files....
         env_file = None
-        if os.path.isfile('.env.example'):
-            env_file = '.env.example'
-        elif os.path.isfile('.env'):
-            env_file = '.env'
+        if os.path.isfile(path + '/.env.example'):
+            env_file = path + '/.env.example'
+        elif os.path.isfile(path + '/.env'):
+            env_file = path + '/.env'
 
         # No env file means no flag. Not our project.
         if not env_file:
@@ -96,12 +96,12 @@ class ProjectHelpers:
             raise typer.Exit(code=result.returncode)
 
     @staticmethod
-    def restart_composition() -> None:
+    def restart_composition(path: str = '.') -> None:
         # Stop if already running
-        ProjectHelpers.stop_project()
+        ProjectHelpers.stop_project(path)
         # Start up
         typer.secho('Starting project...', fg=typer.colors.YELLOW, bold=True)
-        result = subprocess.run(['docker', 'compose', 'up', '-d'])
+        result = subprocess.run(['docker', 'compose', 'up', '-d'], cwd=path)
         if result.returncode != 0:
             typer.secho('Failed to start project!', err=True, fg=typer.colors.RED, bold=True)
             raise typer.Exit(code=result.returncode)
@@ -109,11 +109,12 @@ class ProjectHelpers:
             typer.secho('Projected started!', err=False, fg=typer.colors.GREEN, bold=True)
 
     @staticmethod
-    def stop_project() -> None:
-        if ProjectHelpers.is_running():
+    def stop_project(path: str = '.') -> None:
+        # TODO: Ensure other projects don't get stopped
+        if ProjectHelpers.is_running(path):
             typer.secho('Stopping project...', fg=typer.colors.YELLOW, bold=True)
             try:
-                subprocess.run(['docker', 'compose', 'down'], check=True)
+                subprocess.run(['docker', 'compose', 'down'], check=True, cwd=path)
             except subprocess.CalledProcessError as e:
                 typer.secho(
                     f"ERROR: Failed to stop the project: {e}",
@@ -124,53 +125,6 @@ class ProjectHelpers:
             typer.secho(
                 'Project is not running.',
                 err=True, fg=typer.colors.YELLOW, bold=True
-            )
-
-    @staticmethod
-    def create_project_directory() -> None:
-        """
-        Prompts the user to enter a name for the project and creates a directory with that name.
-
-        - Sanitizes the project name to ensure it contains only allowed characters.
-        - Checks if a directory with the sanitized name already exists.
-        - Confirms the directory creation with the user.
-        - Creates the directory if it does not already exist.
-
-        Returns:
-            None
-
-        Raises:
-            typer.Exit: If directory creation fails.
-        """
-
-        project_name = typer.prompt("Enter the name of your project (e.g. example.site.test")
-        sanitized_name = ProjectHelpers.sanitize_folder_name(project_name)
-        project_path = os.path.abspath(sanitized_name)
-
-        if os.path.exists(project_path):
-            typer.secho(
-                f"ERROR: Directory '{os.path.basename(project_path)}' already exists. Please choose a different name.",
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=1)
-
-        if typer.confirm(f"Do you want to create the project directory at {project_path}?"):
-            try:
-                os.makedirs(project_path)
-                typer.secho(
-                    f"Directory '{os.path.basename(project_path)}' created successfully at {project_path}.",
-                    fg=typer.colors.GREEN, bold=True
-                )
-            except OSError as e:
-                typer.secho(
-                    f"ERROR: Failed to create directory '{os.path.basename(project_path)}': {e}",
-                    err=True, fg=typer.colors.RED, bold=True
-                )
-                raise typer.Exit(code=1)
-        else:
-            typer.secho(
-                "Project directory creation aborted.",
-                fg=typer.colors.YELLOW, bold=True
             )
 
     @staticmethod

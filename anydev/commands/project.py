@@ -14,10 +14,9 @@ cmd = typer.Typer(
 @cmd.command('c | create')
 def create():
     """Create a new project."""
-    ProjectHelpers.create_project_directory()
-    # TODO: Prompt for project type, copy selected type to directory
-    # TODO: Offer to setup
-
+    from anydev.core.create_project import CreateProject
+    project_creator = CreateProject()
+    project_creator.prompt()
 
 @cmd.command('l | list')
 @cmd.command('ls', hidden=True)

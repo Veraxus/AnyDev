@@ -11,6 +11,7 @@ python = ">=3.10,<3.14"
 questionary = "^2.0.1"
 typer = "^0.12.5"
 python-dotenv = "^1.0.1"
+pathlib = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^6.10.0"
