@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import subprocess
@@ -15,7 +16,12 @@ class ProjectHelpers:
         """Are the project containers currently running?"""
         proc_command = ['docker', 'compose', 'ps', '--format', 'json']
         result = subprocess.run(proc_command, capture_output=True, text=True)
-        return len(result.stdout.strip()) > 0
+        try:
+            # If running, we will get valid JSON, otherwise, empty string
+            ps_output = json.loads(result.stdout)
+            return len(ps_output) > 0
+        except json.JSONDecodeError as e:
+            return False
 
     @staticmethod
     def is_project() -> bool:
