@@ -6,7 +6,6 @@ import typer
 
 from functools import wraps
 from dotenv import load_dotenv, dotenv_values
-from typer.testing import CliRunner
 
 
 class ProjectHelpers:
@@ -21,7 +20,7 @@ class ProjectHelpers:
             # If running, we will get valid JSON, otherwise, empty string
             ps_output = json.loads(result.stdout)
             return len(ps_output) > 0
-        except json.JSONDecodeError as e:
+        except Exception:
             return False
 
     @staticmethod

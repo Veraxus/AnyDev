@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 import typer
-from pathlib import Path
+from anydev.configuration import Configuration
 from anydev.core.project_helpers import ProjectHelpers
 from dotenv import load_dotenv, set_key, get_key
 
@@ -13,6 +13,7 @@ class CreateProject:
     """
 
     def __init__(self):
+        self.config = Configuration()
         self.entered_project_hostname = None
         self.entered_project_title = None
         self.sanitized_project_title = None
@@ -121,11 +122,7 @@ class CreateProject:
         """
 
         # Get the path to the template directory
-        source_template_path = os.path.join(
-            # TODO: HATE this. Find a better way.
-            Path(__file__).resolve().parent.parent.parent,
-            template_dir
-        )
+        source_template_path = self.config.templates_dir + '/' + template_dir
 
         # Is something wrong with template path?
         if not os.path.exists(source_template_path):

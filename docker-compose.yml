@@ -43,7 +43,7 @@ services:
 
   # Databases
   mysql:
-    image: mysql:8
+    image: mysql:${VER_MYSQL}
     container_name: anydev-mysql
     restart: unless-stopped
     environment:
@@ -60,7 +60,7 @@ services:
       - lamp
 
   postgres:
-    image: postgres:13
+    image: postgres:${VER_POSTGRES}
     container_name: anydev-postgres
     restart: unless-stopped
     environment:
@@ -76,7 +76,7 @@ services:
       - postgres
 
   mongo:
-    image: mongo:8.0
+    image: mongo:${VER_MONGO}
     container_name: anydev-mongo
     restart: unless-stopped
     volumes:
@@ -91,7 +91,7 @@ services:
 
 # Caches
   redis:
-    image: redis:7
+    image: redis:${VER_REDIS}
     container_name: anydev-redis
     restart: unless-stopped
     networks:
@@ -103,7 +103,7 @@ services:
       - redis
 
   memcached:
-    image: memcached:1.6
+    image: memcached:${VER_MEMCACHED}
     container_name: anydev-memcached
     restart: unless-stopped
     networks:

@@ -2,7 +2,6 @@ import typer
 import questionary
 from anydev.commands import project
 from anydev.core.command_alias_group import CommandAliasGroup
-from setuptools.command.alias import alias
 
 # Initialize CLI
 main = typer.Typer(

@@ -45,34 +45,49 @@ class TestProjectHelpers(unittest.TestCase):
             "Folder name should be cut to max length."
         )
 
-    @patch('subprocess.run')
-    def test_is_running(self, mock_subprocess):
-        # Test with project running
-        mock_run_return = MagicMock()
-        mock_run_return.stdout = json.dumps(["running"])
-        mock_subprocess.return_value = mock_run_return
-        self.assertTrue(self.project_helpers.is_running())
-        mock_subprocess.assert_called_once_with([
-            'docker', 'compose', 'ps', '--format', 'json'],
-            capture_output=True, text=True
+    @patch("subprocess.run")
+    @patch("json.loads")
+    def test_is_running_true(self, mock_json_loads, mock_subprocess_run):
+        mock_subprocess_run.return_value.stdout = '[{"name": "app"}]'
+        mock_json_loads.return_value = [{"name": "app"}]
+        self.assertTrue(
+            self.project_helpers.is_running("my_project_path")
         )
-        mock_subprocess.reset_mock()
-
-        # Test with project not running
-        mock_run_return.stdout = json.dumps([])
-        self.assertFalse(self.project_helpers.is_running())
-        mock_subprocess.assert_called_once_with(
+        mock_subprocess_run.assert_called_once_with(
             ['docker', 'compose', 'ps', '--format', 'json'],
-            capture_output=True, text=True
+            capture_output=True,
+            text=True,
+            cwd="my_project_path"
         )
-        mock_subprocess.reset_mock()
 
-        # Test with subprocess exception
-        mock_run_return.stdout = "not json"
-        self.assertFalse(self.project_helpers.is_running())
-        mock_subprocess.assert_called_once_with(
+    @patch("subprocess.run")
+    @patch("json.loads")
+    def test_is_running_false(self, mock_json_loads, mock_subprocess_run):
+        mock_subprocess_run.return_value.stdout = '[]'
+        mock_json_loads.return_value = []
+        self.assertFalse(
+            self.project_helpers.is_running("my_project_path")
+        )
+        mock_subprocess_run.assert_called_once_with(
             ['docker', 'compose', 'ps', '--format', 'json'],
-            capture_output=True, text=True
+            capture_output=True,
+            text=True,
+            cwd="my_project_path"
+        )
+
+    @patch("subprocess.run")
+    @patch("json.loads")
+    def test_is_running_exception(self, mock_json_loads, mock_subprocess_run):
+        mock_subprocess_run.return_value.stdout = 'this is invalid json'
+        mock_json_loads.side_effect = Exception("Invalid JSON")
+        self.assertFalse(
+            self.project_helpers.is_running("my_project_path")
+        )
+        mock_subprocess_run.assert_called_once_with(
+            ['docker', 'compose', 'ps', '--format', 'json'],
+            capture_output=True,
+            text=True,
+            cwd="my_project_path"
         )
 
 
