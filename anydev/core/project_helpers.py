@@ -1,25 +1,24 @@
 import os
+import re
 import subprocess
 import typer
 
 from functools import wraps
 from dotenv import load_dotenv, dotenv_values
 
-from commands.project import stop
-
 
 class ProjectHelpers:
     """Helper functions for AnyDev projects."""
 
     @staticmethod
-    def is_running():
+    def is_running() -> bool:
         """Are the project containers currently running?"""
         proc_command = ['docker', 'compose', 'ps', '--format', 'json']
         result = subprocess.run(proc_command, capture_output=True, text=True)
         return len(result.stdout.strip()) > 0
 
     @staticmethod
-    def is_project():
+    def is_project() -> bool:
         """Check if the current directory is an AnyDev project."""
 
         # Check for .env files....
@@ -60,7 +59,7 @@ class ProjectHelpers:
         return True
 
     @staticmethod
-    def validate_project(f):
+    def validate_project(f) -> callable:
         """Decorator to ensure certain commands check validity of project before running.."""
 
         @wraps(f)
@@ -78,7 +77,7 @@ class ProjectHelpers:
         return wrapper
 
     @staticmethod
-    def open_shell(shell_command: str):
+    def open_shell(shell_command: str) -> None:
         """Open shell for the current project container."""
         proc_command = ['docker', 'compose', 'exec', 'app', shell_command]
         result = subprocess.run(proc_command)
@@ -90,9 +89,9 @@ class ProjectHelpers:
             raise typer.Exit(code=result.returncode)
 
     @staticmethod
-    def restart_composition():
+    def restart_composition() -> None:
         # Stop if already running
-        stop()
+        ProjectHelpers.stop_project()
         # Start up
         typer.secho('Starting project...', fg=typer.colors.YELLOW, bold=True)
         result = subprocess.run(['docker', 'compose', 'up', '-d'])
@@ -103,7 +102,7 @@ class ProjectHelpers:
             typer.secho('Projected started!', err=False, fg=typer.colors.GREEN, bold=True)
 
     @staticmethod
-    def stop_project():
+    def stop_project() -> None:
         if ProjectHelpers.is_running():
             typer.secho('Stopping project...', fg=typer.colors.YELLOW, bold=True)
             try:
@@ -119,3 +118,68 @@ class ProjectHelpers:
                 'Project is not running.',
                 err=True, fg=typer.colors.YELLOW, bold=True
             )
+
+    @staticmethod
+    def create_project_directory() -> None:
+
+        while True:
+            project_name = typer.prompt("Enter the name of your project")
+            sanitized_name = ProjectHelpers.sanitize_folder_name(project_name)
+            project_path = os.path.abspath(sanitized_name)
+
+            if os.path.exists(project_path):
+                typer.secho(
+                    f"ERROR: Directory '{sanitized_name}' already exists. Please choose a different name.",
+                    err=True, fg=typer.colors.RED, bold=True
+                )
+                continue
+
+            confirm = typer.confirm(f"Do you want to create a project directory at {project_path}?")
+            if not confirm:
+                typer.secho(
+                    "Project directory creation aborted.",
+                    fg=typer.colors.YELLOW, bold=True
+                )
+                return
+
+            try:
+                os.makedirs(project_path)
+                typer.secho(
+                    f"Directory '{sanitized_name}' created successfully at {project_path}.",
+                    fg=typer.colors.GREEN, bold=True
+                )
+                return
+            except Exception as e:
+                typer.secho(
+                    f"ERROR: Failed to create directory '{sanitized_name}': {e}",
+                    err=True, fg=typer.colors.RED, bold=True
+                )
+                raise typer.Exit(code=1)
+
+    @staticmethod
+    def sanitize_folder_name(folder_name: str) -> str:
+        """
+        Sanitizes a folder name by replacing any risky (non-allow-listed) characters.
+        Allowed characters: alphanumeric, underscores, dashes, spaces, and dots.
+
+        Args:
+            folder_name (str): The folder name to sanitize.
+
+        Returns:
+            str: The sanitized folder name.
+        """
+
+        # Define a regex pattern to match any character that is NOT alphanumeric, underscore, dash, space, or dot
+        allowed_chars = r'[^\w\-\s\.]'
+
+        # Replace any invalid characters with underscores
+        sanitized_name = re.sub(allowed_chars, '_', folder_name)
+
+        # Remove leading/trailing spaces
+        sanitized_name = sanitized_name.strip()
+
+        # Optionally limit the length to 255 characters (common max length)
+        max_length = 255
+        sanitized_name = sanitized_name[:max_length]
+
+        return sanitized_name
