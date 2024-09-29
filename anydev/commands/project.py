@@ -1,5 +1,4 @@
 import typer
-import subprocess
 
 from anydev.core.command_alias_group import CommandAliasGroup
 from anydev.core.project_helpers import ProjectHelpers
@@ -61,15 +60,4 @@ def terminal(
 @ProjectHelpers.validate_project
 def logs():
     """Tail the container logs."""
-    if ProjectHelpers.is_running():
-        proc_command = ['docker', 'compose', 'logs', 'app', '-f']
-        result = subprocess.run(proc_command)
-        if result.returncode != 0:
-            typer.secho(
-                'ERROR: Command failed: ' + ' '.join(proc_command),
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=result.returncode)
-    else:
-        typer.secho('The project is not currently running.', err=True, fg=typer.colors.RED, bold=True)
-        raise typer.Exit(code=1)
+    ProjectHelpers.tail_container_logs()

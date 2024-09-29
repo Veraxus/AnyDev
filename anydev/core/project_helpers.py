@@ -189,3 +189,19 @@ class ProjectHelpers:
         sanitized_name = sanitized_name[:max_length]
 
         return sanitized_name
+
+    @staticmethod
+    def tail_container_logs():
+        if ProjectHelpers.is_running():
+            proc_command = ['docker', 'compose', 'logs', 'app', '-f']
+            result = subprocess.run(proc_command)
+            if result.returncode != 0:
+                typer.secho(
+                    'ERROR: Command failed: ' + ' '.join(proc_command),
+                    err=True, fg=typer.colors.RED, bold=True
+                )
+                raise typer.Exit(code=result.returncode)
+            typer.secho('Tailing logs. Press Ctrl+C to exit.', fg=typer.colors.YELLOW, bold=True)
+        else:
+            typer.secho('The project is not currently running.', err=True, fg=typer.colors.RED, bold=True)
+            raise typer.Exit(code=1)
