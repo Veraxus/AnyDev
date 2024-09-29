@@ -6,6 +6,7 @@ import typer
 
 from functools import wraps
 from dotenv import load_dotenv, dotenv_values
+from typer.testing import CliRunner
 
 
 class ProjectHelpers:
@@ -127,40 +128,50 @@ class ProjectHelpers:
 
     @staticmethod
     def create_project_directory() -> None:
+        """
+        Prompts the user to enter a name for the project and creates a directory with that name.
 
-        while True:
-            project_name = typer.prompt("Enter the name of your project")
-            sanitized_name = ProjectHelpers.sanitize_folder_name(project_name)
-            project_path = os.path.abspath(sanitized_name)
+        - Sanitizes the project name to ensure it contains only allowed characters.
+        - Checks if a directory with the sanitized name already exists.
+        - Confirms the directory creation with the user.
+        - Creates the directory if it does not already exist.
 
-            if os.path.exists(project_path):
-                typer.secho(
-                    f"ERROR: Directory '{sanitized_name}' already exists. Please choose a different name.",
-                    err=True, fg=typer.colors.RED, bold=True
-                )
-                continue
+        Returns:
+            None
 
-            confirm = typer.confirm(f"Do you want to create a project directory at {project_path}?")
-            if not confirm:
-                typer.secho(
-                    "Project directory creation aborted.",
-                    fg=typer.colors.YELLOW, bold=True
-                )
-                return
+        Raises:
+            typer.Exit: If directory creation fails.
+        """
 
+        project_name = typer.prompt("Enter the name of your project (e.g. example.site.test")
+        sanitized_name = ProjectHelpers.sanitize_folder_name(project_name)
+        project_path = os.path.abspath(sanitized_name)
+
+        if os.path.exists(project_path):
+            typer.secho(
+                f"ERROR: Directory '{os.path.basename(project_path)}' already exists. Please choose a different name.",
+                err=True, fg=typer.colors.RED, bold=True
+            )
+            raise typer.Exit(code=1)
+
+        if typer.confirm(f"Do you want to create the project directory at {project_path}?"):
             try:
                 os.makedirs(project_path)
                 typer.secho(
-                    f"Directory '{sanitized_name}' created successfully at {project_path}.",
+                    f"Directory '{os.path.basename(project_path)}' created successfully at {project_path}.",
                     fg=typer.colors.GREEN, bold=True
                 )
-                return
-            except Exception as e:
+            except OSError as e:
                 typer.secho(
-                    f"ERROR: Failed to create directory '{sanitized_name}': {e}",
+                    f"ERROR: Failed to create directory '{os.path.basename(project_path)}': {e}",
                     err=True, fg=typer.colors.RED, bold=True
                 )
                 raise typer.Exit(code=1)
+        else:
+            typer.secho(
+                "Project directory creation aborted.",
+                fg=typer.colors.YELLOW, bold=True
+            )
 
     @staticmethod
     def sanitize_folder_name(folder_name: str) -> str:
@@ -191,10 +202,23 @@ class ProjectHelpers:
         return sanitized_name
 
     @staticmethod
-    def tail_container_logs():
+    def tail_container_logs(service_name: str = "app", path: str = '.') -> None:
+        """
+        Tails the logs of a specified service within the current running Docker Compose project.
+
+        This method runs the `docker compose logs` command with the `-f` flag to follow the logs
+        of the given service in real-time. The logs are tailed in the specified directory.
+
+        Args:
+            service_name (str): The name of the Docker Compose service to tail logs for. Defaults to "app".
+            path (str): The directory in which to run the command. Defaults to the current directory/context.
+
+        Raises:
+            typer.Exit: If the project is not running or the log tailing command fails.
+        """
         if ProjectHelpers.is_running():
-            proc_command = ['docker', 'compose', 'logs', 'app', '-f']
-            result = subprocess.run(proc_command)
+            proc_command = ['docker', 'compose', 'logs', service_name, '-f']
+            result = subprocess.run(proc_command, cwd=path)
             if result.returncode != 0:
                 typer.secho(
                     'ERROR: Command failed: ' + ' '.join(proc_command),

@@ -14,7 +14,9 @@ cmd = typer.Typer(
 @cmd.command('c | create')
 def create():
     """Create a new project."""
-    print('Not yet implemented.')
+    ProjectHelpers.create_project_directory()
+    # TODO: Prompt for project type, copy selected type to directory
+    # TODO: Offer to setup
 
 
 @cmd.command('l | list')

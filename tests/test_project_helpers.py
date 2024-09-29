@@ -1,13 +1,13 @@
 import unittest
 import json
 from unittest.mock import patch, MagicMock
-from anydev.core import project_helpers
+from anydev.core.project_helpers import ProjectHelpers
 
 
 class TestProjectHelpers(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        self.project_helpers = project_helpers.ProjectHelpers
+        self.project_helpers = ProjectHelpers
 
     def tearDown(self):
         super().tearDown()
