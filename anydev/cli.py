@@ -1,7 +1,7 @@
 import typer
-import questionary
 from anydev.commands import project
 from anydev.core.command_alias_group import CommandAliasGroup
+from anydev.core.configure_services import ConfigureServices
 
 # Initialize CLI
 main = typer.Typer(
@@ -18,9 +18,12 @@ def install():
 
 
 @main.command("c | configure")
+@main.command("config", hidden=True)
 def configure():
     """Add or remove services from your environments."""
-    print('Not yet implemented.')
+    print('Warning: Work in progress.')
+    services = ConfigureServices()
+    services.configure()
 
 
 # Sub-commands

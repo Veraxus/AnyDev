@@ -18,10 +18,17 @@ def create():
     project_creator = CreateProject()
     project_creator.prompt()
 
+
+@cmd.command('a | add')
+def add():
+    """Add an existing project directory to AnyDev's memory."""
+    print('Not yet implemented.')
+
+
 @cmd.command('l | list')
 @cmd.command('ls', hidden=True)
 @ProjectHelpers.validate_project
-def list():
+def list_all():
     """List all projects."""
     print('Not yet implemented.')
 
@@ -43,6 +50,14 @@ def stop():
     ProjectHelpers.stop_project()
 
 
+@cmd.command('g | logs')
+@cmd.command('log', hidden=True)
+@ProjectHelpers.validate_project
+def logs():
+    """Tail the container logs."""
+    ProjectHelpers.tail_container_logs()
+
+
 @cmd.command('t | terminal')
 @ProjectHelpers.validate_project
 def terminal(
@@ -54,11 +69,3 @@ def terminal(
     """Open command for the current project container."""
     typer.secho(f"Opening interactive shell with {shell_command}", err=True, fg=typer.colors.YELLOW, bold=True)
     ProjectHelpers.open_shell(shell_command)
-
-
-@cmd.command('g | logs')
-@cmd.command('log', hidden=True)
-@ProjectHelpers.validate_project
-def logs():
-    """Tail the container logs."""
-    ProjectHelpers.tail_container_logs()

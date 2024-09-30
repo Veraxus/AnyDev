@@ -4,7 +4,7 @@ import shutil
 import typer
 from anydev.configuration import Configuration
 from anydev.core.project_helpers import ProjectHelpers
-from dotenv import load_dotenv, set_key, get_key
+from dotenv import set_key, get_key
 
 
 class CreateProject:
@@ -18,13 +18,18 @@ class CreateProject:
         self.entered_project_title = None
         self.sanitized_project_title = None
         self.project_path = None
+        self.template_name = None
 
     def prompt(self) -> None:
+        # TODO: Halt if AnyDev is not configured
+
         # 1. Prompt user for directory
         self.create_project_directory()
         # 2. Prompt user for template
         self.prompt_template_select()
-        # 3. Prompt for project configuration
+        # 3. Save project information to configs
+        self.config.add_project(f"{self.entered_project_hostname}.site.test", self.project_path, self.template_name)
+        # 4. Prompt for project configuration
         self.prompt_project_setup()
 
     def create_project_directory(self) -> None:
@@ -39,7 +44,7 @@ class CreateProject:
         """
 
         # Initial questions!
-        self.entered_project_hostname = typer.prompt('Enter a simple hostname for your project (e.g. "foo", or "bar")')
+        self.entered_project_hostname = typer.prompt('Enter a simple hostname for your project (e.g. "foo", "bar", "foo-bar")')
         if not typer.confirm(
                 f"Do you want to use the default folder name ({self.entered_project_hostname}.site.test)?",
                 default=True
@@ -51,7 +56,23 @@ class CreateProject:
         else:
             self.entered_project_title = f"{self.entered_project_hostname}.site.test"
         self.sanitized_project_title = self.sanitize_folder_name(self.entered_project_title)
-        self.project_path = os.path.abspath(self.sanitized_project_title)
+
+        # Check if current directory is AnyDev default projects directory
+        projects_dir = self.config.get_project_directory()
+        current_directory = os.getcwd()
+        if current_directory != projects_dir:
+            if not typer.confirm(
+                f"Current directory ({current_directory}) is not your configured projects directory. Should I create it there, instead ({projects_dir})?",
+                default=True
+            ):
+                # Use the current directory
+                self.project_path = os.path.join(current_directory, self.sanitized_project_title)
+            else:
+                # Use the project directory
+                self.project_path = os.path.join(projects_dir, self.sanitized_project_title)
+        else:
+            # Use the project directry
+            self.project_path = os.path.join(projects_dir, self.sanitized_project_title)
 
         # Starting validating...
         if os.path.exists(self.project_path):
@@ -95,26 +116,25 @@ class CreateProject:
     def prompt_template_select(self) -> None:
         """Handles interactive process of copying template files into project directory."""
         templates = {
-            "Apache + PHP 8.2": "templates/apache-php",
-            "Python 3.10":      "templates/python",
+            "Apache + PHP 8.2": "apache-php",
+            "Python 3.10":      "python",
         }
 
-        # TODO: Switch to questionary
+        # TODO: Switch this mess to questionary
         typer.secho("Available templates:", fg=typer.colors.BLUE, bold=True)
         for idx, template_name in enumerate(templates.keys(), 1):
             typer.secho(f"{idx} | {template_name}", fg=typer.colors.CYAN)
         template_choice = typer.prompt("Select a template (enter the number)")
-
         try:
-            template_idx = int(template_choice) - 1
-            if template_idx < 0 or template_idx >= len(templates):
+            template_index = int(template_choice) - 1
+            if template_index < 0 or template_index >= len(templates):
                 raise ValueError
         except ValueError:
             typer.secho("ERROR: Invalid template selection.", err=True, fg=typer.colors.RED, bold=True)
             raise typer.Exit(code=1)
 
-        selected_template = list(templates.values())[template_idx]
-        self.copy_template_files(selected_template)
+        self.template_name = list(templates.values())[template_index]
+        self.copy_template_files(self.template_name)
 
     def copy_template_files(self, template_dir: str) -> None:
         """

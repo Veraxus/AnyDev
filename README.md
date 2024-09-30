@@ -18,7 +18,7 @@ To get started:
    poetry install
    ```
 
-#### 2. Configure Host Dependencies
+#### 2. Configure Host Dependencies (MacOS)
 
 1. Install [Homebrew](https://brew.sh/):
    ```bash

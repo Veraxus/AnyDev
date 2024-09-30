@@ -57,7 +57,6 @@ services:
       - type=relational-db
     profiles:
       - mysql
-      - lamp
 
   postgres:
     image: postgres:${VER_POSTGRES}
