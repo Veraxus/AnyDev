@@ -1,4 +1,5 @@
 import os
+import questionary
 import re
 import shutil
 import typer
@@ -115,25 +116,32 @@ class CreateProject:
 
     def prompt_template_select(self) -> None:
         """Handles interactive process of copying template files into project directory."""
-        templates = {
-            "Apache + PHP 8.2": "apache-php",
-            "Python 3.10":      "python",
-        }
 
-        # TODO: Switch this mess to questionary
-        typer.secho("Available templates:", fg=typer.colors.BLUE, bold=True)
-        for idx, template_name in enumerate(templates.keys(), 1):
-            typer.secho(f"{idx} | {template_name}", fg=typer.colors.CYAN)
-        template_choice = typer.prompt("Select a template (enter the number)")
+        # Dynamically fetch templates from template directory
+        template_dir = self.config.templates_dir_path
         try:
-            template_index = int(template_choice) - 1
-            if template_index < 0 or template_index >= len(templates):
-                raise ValueError
-        except ValueError:
-            typer.secho("ERROR: Invalid template selection.", err=True, fg=typer.colors.RED, bold=True)
-            raise typer.Exit(code=1)
+            template_dir_contents = os.listdir(template_dir)
+            templates = [name for name in template_dir_contents if os.path.isdir(template_dir, name)]
+        except FileNotFoundError:
+            typer.secho(
+                f"ERROR: Templates directory not found at '{template_dir}'.",
+                err=True, fg=typer.colors.RED, bold=True
+            )
+        except PermissionError:
+            typer.secho(
+                f"ERROR: Permission denied for template directory '{template_dir}'.",
+                err=True, fg=typer.colors.RED, bold=True
+            )
 
-        self.template_name = list(templates.values())[template_index]
+        # Select prompt from available templates
+        self.template_name = questionary.select(
+            "Which template do you want to use?",
+            choices=templates,
+            use_indicator=True,
+            style=self.config.questionary_style
+        ).unsafe_ask()
+
+        # Copy template to target directory
         self.copy_template_files(self.template_name)
 
     def copy_template_files(self, template_dir: str) -> None:

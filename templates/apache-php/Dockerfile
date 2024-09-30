@@ -1,5 +1,10 @@
-# Dockerfile for WordPress
-FROM php:8.2-apache
+# Dockerfile for General PHP Apache apps
+
+# Default version if none provided
+ARG PHP_VERSION=8.2
+
+# Image to pull
+FROM php:${PHP_VERSION}-apache
 
 # Install necessary utilities and dependencies
 RUN apt-get update \

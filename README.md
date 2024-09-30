@@ -72,9 +72,21 @@ To get started:
    ```bash
    docker compose --profile lamp up -d
    ```
+### 4. Create shortcut
+Be sure to create a shortcut in your profile so that you can run AnyDev from anywhere (it's supposed to be context-sensitive, after all)
+```bash
+# Allow AnyDev to be used from anywhere (e.g. projects)
+anydev() {
+    poetry --directory ~/path/to/anydev/directory run anydev "$@"
+}
+# Shorthand shortcut...
+ad() {
+    anydev "$@"
+}
+```
 
-#### 4. Ready to go!
-Access commands with `poetry run anydev ...` or create a convenient alias in your shell profile.
+#### 5. Ready to go!
+Access commands with `anydev ...` or create a convenient alias in your shell profile.
 
 ### Project Goals
 * It must be extremely easy to get up and running, even for novices.

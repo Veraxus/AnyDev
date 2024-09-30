@@ -3,6 +3,8 @@ services:
     container_name: ${HOSTNAME}.site.test
     build:
       context: .
+      args:
+        PHP_VERSION: ${TAG_VERSION}
     volumes:
       # Site/application files
       - ./src:/var/www/html
