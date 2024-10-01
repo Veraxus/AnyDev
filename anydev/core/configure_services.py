@@ -5,6 +5,7 @@ import typer
 import yaml
 from anydev.configuration import Configuration
 from anydev.core.questionary_styles import anydev_qsty_styles
+from anydev.core.cli_output import CliOutput
 
 class ConfigureServices:
     """
@@ -20,16 +21,10 @@ class ConfigureServices:
         Prompts users for their desired stacks/configurations.
         """
 
-        typer.secho(
-            "Starting interactive configuration...",
-            fg=typer.colors.YELLOW, bold=True
-        )
+        CliOutput.info("Starting interactive configuration...")
 
         if self.config.get_configs():
-            typer.secho(
-                "Existing configuration found. Using it for default values.",
-                fg=typer.colors.YELLOW, bold=True
-            )
+            CliOutput.info("Using your existing configuration for defaults.")
 
         # Ask user which profiles they want to use
         self.prompt_profiles()
@@ -43,15 +38,7 @@ class ConfigureServices:
         # Ask user if they want to restart services
         self.prompt_restart()
 
-        typer.secho(
-            "Configuration complete!",
-            fg=typer.colors.GREEN, bold=True
-        )
-        typer.secho(
-            "Create projects with `anydev project create`.",
-            fg=typer.colors.GREEN
-        )
-        raise typer.Exit(code=0)
+        CliOutput.success("Configuration complete!", True)
 
     def prompt_profiles(self) -> None:
         """
@@ -75,15 +62,9 @@ class ConfigureServices:
         ).unsafe_ask()  # <-- keyboard interrupt exits
         # If no profiles are selected, return or handle accordingly
         if selected_profiles is None or len(selected_profiles) == 0:
-            typer.secho(
-                "No profiles selected. Using minimal configuration.",
-                fg=typer.colors.YELLOW, bold=True
-            )
+            CliOutput.info("No profiles selected. Using minimal configuration.")
         else:
-            typer.secho(
-                'Selected profiles: ' + ', '.join(selected_profiles),
-                fg=typer.colors.GREEN, bold=True
-            )
+            CliOutput.info('Using your selected profiles: ' + ', '.join(selected_profiles))
             self.config.set_active_profiles(selected_profiles)
 
     def get_service_profiles(self) -> list:
@@ -125,17 +106,11 @@ class ConfigureServices:
         ).unsafe_ask()  # <-- keyboard interrupt exits
 
         if project_dir and os.path.isdir(project_dir.strip()):
-            typer.secho(
-                f"Projects directory set to: {project_dir}",
-                fg=typer.colors.GREEN, bold=True
-            )
+            CliOutput.success(f"Projects will be created in: {project_dir}")
             self.config.set_project_directory(project_dir)
             return
         elif not project_dir or project_dir.strip() == "":
-            typer.secho(
-                "You need to specify somewhere to keep your projects.",
-                fg=typer.colors.RED
-            )
+            CliOutput.warning("You need to specify a directory to keep your projects.")
             return self.prompt_projects_dir()
         else:
             create_dir = questionary.confirm(
@@ -148,20 +123,12 @@ class ConfigureServices:
                 try:
                     os.makedirs(project_dir)
                     self.config.set_project_directory(project_dir)
-                    return typer.secho(
-                        f"Directory created at: {project_dir}",
-                        fg=typer.colors.GREEN, bold=True
-                    )
+                    CliOutput.success(f"Projects will be created in: {project_dir}")
+                    return
                 except Exception as e:
-                    typer.secho(
-                        f"ERROR: Unable to create directory {project_dir}: {e}",
-                        err=True, fg=typer.colors.RED, bold=True
-                    )
+                    CliOutput.warning(f"Unable to create directory {project_dir}: {e}")
                     return self.prompt_projects_dir()
-            typer.secho(
-                "Please set a directory to continue.",
-                fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning("Please set a directory to continue configuration.")
             return self.prompt_projects_dir()
 
     def prompt_restart(self) -> None:
@@ -173,17 +140,17 @@ class ConfigureServices:
         ).unsafe_ask()
 
         if restart_services:
-            typer.secho("Stopping any running service containers...", fg=typer.colors.YELLOW, bold=True)
+            CliOutput.info("Asking Docker to stop all services...")
             subprocess.run(['docker', 'compose', '--profile', '*', 'down'], cwd=self.config.cli_root_dir)
 
-            typer.secho(
-                "Starting your service containers...",
-                        fg=typer.colors.YELLOW, bold=True
-            )
+            # Create list of --profile args for all chosen services
             profiles = self.config.get_active_profiles()
             profile_args = []
             for profile in profiles:
                 profile_args.extend(["--profile", profile])
+
+            # Start services with all selected profiles
+            CliOutput.info("Asking Docker to start chosen services...")
             subprocess.run(["docker-compose"] + profile_args + ["up", "-d"], cwd=self.config.cli_root_dir)
 
             # TODO: Exception handling

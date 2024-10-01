@@ -4,6 +4,7 @@ import re
 import shutil
 import typer
 from anydev.configuration import Configuration
+from anydev.core.cli_output import CliOutput
 from anydev.core.project_helpers import ProjectHelpers
 from dotenv import set_key, get_key
 
@@ -80,10 +81,7 @@ class CreateProject:
             # The directory already exists!!!
             if os.listdir(self.project_path):
                 # The directory is NOT empty. Abort.
-                typer.secho(
-                    f"ERROR: Directory '{os.path.basename(self.project_path)}' already exists and is not empty. Please choose a different name.",
-                    err=True, fg=typer.colors.RED, bold=True
-                )
+                CliOutput.error(f"Directory '{os.path.basename(self.project_path)}' already exists and is not empty. Please choose a different name.")
                 raise typer.Exit(code=1)
             else:
                 # Hey, the directory was empty! Use it?
@@ -92,27 +90,16 @@ class CreateProject:
                         default=True
                 ):
                     # User said no thanks :'(
-                    typer.secho("Project creation cancelled.", fg=typer.colors.YELLOW, bold=True)
-                    raise typer.Exit(code=1)
+                    CliOutput.alert("Project creation cancelled.", True)
                 else:
-                    typer.secho(
-                        f"Using existing directory at {self.project_path}.",
-                        fg=typer.colors.GREEN, bold=True
-                    )
+                    CliOutput.success(f"Using existing directory at {self.project_path}.")
                     return
         else:
             try:
                 os.makedirs(self.project_path)
-                typer.secho(
-                    f"Directory created successfully at {self.project_path}.",
-                    fg=typer.colors.GREEN, bold=True
-                )
+                CliOutput.success(f"Created directory at {self.project_path}.")
             except OSError as e:
-                typer.secho(
-                    f"ERROR: Failed to create directory at '{os.path.basename(self.project_path)}': {e}",
-                    err=True, fg=typer.colors.RED, bold=True
-                )
-                raise typer.Exit(code=1)
+                CliOutput.error(f"Failed to create directory at '{os.path.basename(self.project_path)}': {e}")
 
     def prompt_template_select(self) -> None:
         """Handles interactive process of copying template files into project directory."""
@@ -123,15 +110,9 @@ class CreateProject:
             template_dir_contents = os.listdir(template_dir)
             templates = [name for name in template_dir_contents if os.path.isdir(template_dir, name)]
         except FileNotFoundError:
-            typer.secho(
-                f"ERROR: Templates directory not found at '{template_dir}'.",
-                err=True, fg=typer.colors.RED, bold=True
-            )
+            CliOutput.error(f"Templates directory not found at '{template_dir}'.", False)
         except PermissionError:
-            typer.secho(
-                f"ERROR: Permission denied for template directory '{template_dir}'.",
-                err=True, fg=typer.colors.RED, bold=True
-            )
+            CliOutput.error(f"Permission denied for template directory '{template_dir}'.", False)
 
         # Select prompt from available templates
         self.template_name = questionary.select(
@@ -154,51 +135,43 @@ class CreateProject:
 
         # Is something wrong with template path?
         if not os.path.exists(source_template_path):
-            typer.secho(
-                f"ERROR: Template directory '{source_template_path}' not found.",
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=1)
+
+            CliOutput.error(f"Template directory '{source_template_path}' not found.", True)
 
         try:
             # Attempt to copy the template!
             shutil.copytree(source_template_path, self.project_path, dirs_exist_ok=True)
-            typer.secho(
-                f"Template files from '{template_dir}' copied to '{self.project_path}'",
-                fg=typer.colors.GREEN, bold=True
-            )
+            CliOutput.success(f"Template files copied to '{self.project_path}'")
         except Exception as e:
-            typer.secho(
-                f"ERROR: Failed to copy template files: {e}",
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=1)
-
-        typer.secho("Template successfully copied!", fg=typer.colors.GREEN, bold=True)
+            CliOutput.error(f"Failed to copy template files: {e}", True)
 
     def prompt_project_setup(self) -> None:
+        """
+        Prompts the user to configure and start the project if desired.
+
+        This method asks the user if they want to configure and start the project.
+        If the user confirms, it updates environment files, creates an environment
+        file from a template, and restarts the project composition. Finally, it
+        provides success messages with the project URL and location.
+
+        Raises:
+            typer.Exit: Exits the application after the configuration process.
+        """
         if typer.confirm("Would you like me to configure and start the project for you?", default=True):
             self._update_env()
             self._create_env_file()
             ProjectHelpers.restart_composition(self.project_path)
-            typer.secho(
-                f"All done!",
-                fg=typer.colors.GREEN, bold=True
-            )
-            typer.secho(
-                f"Browser URL: https://{self.entered_project_hostname}.site.test",
-                fg=typer.colors.GREEN, bold=True
-            )
-            typer.secho(
-                f"Project Location: {self.project_path}",
-                fg=typer.colors.GREEN, bold=True
-            )
+            CliOutput.success("Project configured and started!")
+            CliOutput.success(f"URL: https://{self.entered_project_hostname}.site.test")
+            CliOutput.success(f"Project Location: {self.project_path}")
         else:
-            typer.secho("Project creation completed. It's in your hands now!", fg=typer.colors.GREEN, bold=True)
+            CliOutput.alert("Project configuration completed.")
         raise typer.Exit(code=0)
 
     def _update_env(self, filename: str = '.env.example') -> None:
         """Set the values in the .env.example file."""
+
+        # Location of env file for current project
         dotenv_path = f"{self.project_path}/{filename}"
 
         # Change the value of the HOSTNAME variable
@@ -217,19 +190,11 @@ class CreateProject:
 
         try:
             shutil.copy(env_example_path, env_path)
-            typer.secho("Successfully created .env", fg=typer.colors.GREEN, bold=True)
+            CliOutput.success("Successfully created .env file.")
         except PermissionError:
-            typer.secho(
-                f"ERROR: Permission denied. Unable to create .env",
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=1)
+            CliOutput.error(f"Permission denied. Unable to create .env", True)
         except Exception as e:
-            typer.secho(
-                f"ERROR: Failed to create .env: {e}",
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=1)
+            CliOutput.error(f"Failed to create .env: {e}", True)
 
     @staticmethod
     def sanitize_folder_name(folder_name: str) -> str:

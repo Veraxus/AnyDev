@@ -2,6 +2,7 @@ import typer
 from anydev.commands import project
 from anydev.core.command_alias_group import CommandAliasGroup
 from anydev.core.configure_services import ConfigureServices
+from anydev.core.cli_output import CliOutput
 
 # Initialize CLI
 main = typer.Typer(
@@ -14,7 +15,7 @@ main = typer.Typer(
 @main.command("i | install")
 def install():
     """Check your system for prerequisites and optionally install them."""
-    print('Not yet implemented.')
+    CliOutput.warning('Not yet implemented.')
 
 
 @main.command("c | configure")

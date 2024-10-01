@@ -4,6 +4,8 @@ import shutil
 import typer
 import yaml
 
+from core.cli_output import CliOutput
+
 
 class Configuration:
     """Configuration settings for the application.
@@ -96,15 +98,9 @@ class Configuration:
             with open(self.config_file, 'r') as file:
                 return yaml.safe_load(file)
         except FileNotFoundError:
-            typer.secho(
-                f"AnyDev has not been configured.",
-                fg=typer.colors.YELLOW, bold=True
-            )
+            CliOutput.warning("AnyDev has not been configured yet.")
         except yaml.YAMLError as error:
-            typer.secho(
-                f"ERROR: Unable to parse config file at {self.config_file}: {error}!",
-                err=True, fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning(f"Unable to parse config file at {self.config_file}: {error}!")
         return {}
 
     def get_configs(self) -> dict:
@@ -187,10 +183,7 @@ class Configuration:
         sanitized_arch = arch_dict.get(arch, None)
 
         if not sanitized_arch:
-            typer.secho(
-                "ERROR: Unsupported architecture.",
-                err=True, fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning("Unsupported architecture.")
 
         self._arch = sanitized_arch
         return self._arch
@@ -211,10 +204,7 @@ class Configuration:
                 shutil.which('brew') is not None
             )
         elif os_system == 'Windows':
-            typer.secho(
-                "Warning: Windows is not fully supported yet.",
-                fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning("Windows is not fully supported yet.")
             self._os = self.make_os_dict(
                 'windows',
                 platform.version(),
@@ -223,17 +213,10 @@ class Configuration:
                 shutil.which('choco') is not None
             )
         elif os_system == 'Linux':
-            typer.secho(
-                "Warning: Linux is not fully supported yet.",
-                fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning("Linux is not fully supported yet.")
             self._os = self.make_os_dict('linux')
         else:
-            typer.secho(
-                f"ERROR: Unsupported OS: {os_system}",
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=1)
+            CliOutput.error(f"Unsupported OS: {os_system}", True)
 
         return self._os
 
@@ -265,15 +248,9 @@ class Configuration:
             found_distro = os_info.get('ID', None)
             found_version = os_info.get('VERSION_ID', None)
         except FileNotFoundError:
-            typer.secho(
-                "Error: Could not read distro information from /etc/os-release",
-                fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning("Could not read distro information from /etc/os-release")
         except Exception:
-            typer.secho(
-                "Error: Could not find information about your distro.",
-                fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning("Could not find information about your distro.")
 
         # FINALLY, check package managers...
         found_pkg_man = None
@@ -310,12 +287,6 @@ class Configuration:
             os.makedirs(self.config_dir, exist_ok=True)
             with open(self.config_file, 'w') as file:
                 yaml.safe_dump(self._configs, file)
-            typer.secho(
-                f"Successfully saved configuration!",
-                fg=typer.colors.GREEN, bold=True
-            )
+            CliOutput.success("Configuration saved!")
         except Exception as error:
-            typer.secho(
-                f"ERROR: Unable to save config file at {self.config_file}: {error}!",
-                err=True, fg=typer.colors.RED, bold=True
-            )
+            CliOutput.error(f"Unable to save config file to {self.config_file}: {error}!", True)

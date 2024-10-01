@@ -2,6 +2,7 @@ import typer
 
 from anydev.core.command_alias_group import CommandAliasGroup
 from anydev.core.project_helpers import ProjectHelpers
+from core.cli_output import CliOutput
 
 # Initialize Typer for the project sub-commands
 cmd = typer.Typer(
@@ -67,5 +68,5 @@ def terminal(
         )
 ):
     """Open command for the current project container."""
-    typer.secho(f"Opening interactive shell with {shell_command}", err=True, fg=typer.colors.YELLOW, bold=True)
+    CliOutput.info(f"Opening terminal with {shell_command}")
     ProjectHelpers.open_shell(shell_command)

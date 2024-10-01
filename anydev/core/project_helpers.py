@@ -7,6 +7,8 @@ import typer
 from functools import wraps
 from dotenv import load_dotenv, dotenv_values
 
+from core.cli_output import CliOutput
+
 
 class ProjectHelpers:
     """Helper functions for AnyDev projects."""
@@ -36,10 +38,7 @@ class ProjectHelpers:
 
         # No env file means no flag. Not our project.
         if not env_file:
-            typer.secho(
-                "ERROR: This is not an AnyDev project (no env file found)",
-                err=True, fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning("Current directory is not a valid AnyDev project.")
             return False
 
         try:
@@ -47,19 +46,12 @@ class ProjectHelpers:
             load_dotenv(env_file)
             env_vars = dotenv_values(env_file)
         except Exception as e:
-            typer.secho(
-                f"ERROR: Failed to parse the environment file: {e}",
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=1)
+            CliOutput.error(f"Could not parse environment file: {env_file}, {e}", True)
 
         # Check if the ANYDEV variable is present and "truthy"
         anydev_value = env_vars.get("ANYDEV")
         if anydev_value is None or str(anydev_value).lower() not in ["true", "1", "yes"]:
-            typer.secho(
-                f"ERROR: ANYDEV variable not present or enabled in {env_file}",
-                err=True, fg=typer.colors.RED, bold=True
-            )
+            CliOutput.warning(f"Could not verify project. ANYDEV variable is not present or enabled in {env_file}")
             return False
 
         return True
@@ -74,11 +66,7 @@ class ProjectHelpers:
             if ProjectHelpers.is_project():
                 return f(*args, **kwargs)
             else:
-                typer.secho(
-                    'Current directory is not a valid AnyDev project.',
-                    err=True, fg=typer.colors.RED, bold=True
-                )
-                raise typer.Exit(code=1)
+                CliOutput.error("Current directory is not a valid AnyDev project.", True)
 
         return wrapper
 
@@ -88,43 +76,30 @@ class ProjectHelpers:
         proc_command = ['docker', 'compose', 'exec', 'app', shell_command]
         result = subprocess.run(proc_command)
         if result.returncode != 0:
-            typer.secho(
-                'ERROR: Command failed: ' + ' '.join(proc_command),
-                err=True, fg=typer.colors.RED, bold=True
-            )
-            raise typer.Exit(code=result.returncode)
+            CliOutput.error('Command failed: ' + ' '.join(proc_command), True)
 
     @staticmethod
     def restart_composition(path: str = '.') -> None:
         # Stop if already running
         ProjectHelpers.stop_project(path)
         # Start up
-        typer.secho('Starting project...', fg=typer.colors.YELLOW, bold=True)
+        CliOutput.info('Asking Docker to start project...')
         result = subprocess.run(['docker', 'compose', 'up', '-d'], cwd=path)
         if result.returncode != 0:
-            typer.secho('Failed to start project!', err=True, fg=typer.colors.RED, bold=True)
-            raise typer.Exit(code=result.returncode)
+            CliOutput.error('Failed to start project!', True, result.returncode)
         else:
-            typer.secho('Projected started!', err=False, fg=typer.colors.GREEN, bold=True)
+            CliOutput.success('Project started!', True)
 
     @staticmethod
     def stop_project(path: str = '.') -> None:
-        # TODO: Ensure other projects don't get stopped
         if ProjectHelpers.is_running(path):
-            typer.secho('Stopping project...', fg=typer.colors.YELLOW, bold=True)
+            CliOutput.info('Asking Docker to stop project...')
             try:
                 subprocess.run(['docker', 'compose', 'down'], check=True, cwd=path)
             except subprocess.CalledProcessError as e:
-                typer.secho(
-                    f"ERROR: Failed to stop the project: {e}",
-                    err=True, fg=typer.colors.RED, bold=True
-                )
-                raise typer.Exit(code=e.returncode)
+                CliOutput.error('Failed to stop project!', True, e.returncode)
         else:
-            typer.secho(
-                'Project is not running.',
-                err=True, fg=typer.colors.YELLOW, bold=True
-            )
+            CliOutput.info('Project is not currently running.')
 
     @staticmethod
     def sanitize_folder_name(folder_name: str) -> str:
@@ -173,12 +148,7 @@ class ProjectHelpers:
             proc_command = ['docker', 'compose', 'logs', service_name, '-f']
             result = subprocess.run(proc_command, cwd=path)
             if result.returncode != 0:
-                typer.secho(
-                    'ERROR: Command failed: ' + ' '.join(proc_command),
-                    err=True, fg=typer.colors.RED, bold=True
-                )
-                raise typer.Exit(code=result.returncode)
-            typer.secho('Tailing logs. Press Ctrl+C to exit.', fg=typer.colors.YELLOW, bold=True)
+                CliOutput.error('Command failed: ' + ' '.join(proc_command), True, result.returncode)
+            CliOutput.info('Logs tailed. Press Ctrl+C to exit.')
         else:
-            typer.secho('The project is not currently running.', err=True, fg=typer.colors.RED, bold=True)
-            raise typer.Exit(code=1)
+            CliOutput.error('The project is not currently running.', True)
