@@ -4,7 +4,7 @@ import subprocess
 import typer
 import yaml
 from anydev.configuration import Configuration
-
+from anydev.core.questionary_styles import anydev_qsty_styles
 
 class ConfigureServices:
     """
@@ -70,7 +70,8 @@ class ConfigureServices:
                     title=profile,
                     checked=(profile in active_profiles)
                 ) for profile in profiles
-            ]
+            ],
+            style=anydev_qsty_styles
         ).unsafe_ask()  # <-- keyboard interrupt exits
         # If no profiles are selected, return or handle accordingly
         if selected_profiles is None or len(selected_profiles) == 0:
@@ -119,12 +120,13 @@ class ConfigureServices:
 
         project_dir = questionary.text(
             "Where do you want to put your projects?",
-            default=self.config.get_project_directory()
+            default=self.config.get_project_directory(),
+            style=anydev_qsty_styles
         ).unsafe_ask()  # <-- keyboard interrupt exits
 
-        if project_dir and os.path.isdir(project_dir):
+        if project_dir and os.path.isdir(project_dir.strip()):
             typer.secho(
-                f"Default projects directory set to: {project_dir}",
+                f"Projects directory set to: {project_dir}",
                 fg=typer.colors.GREEN, bold=True
             )
             self.config.set_project_directory(project_dir)
@@ -137,7 +139,9 @@ class ConfigureServices:
             return self.prompt_projects_dir()
         else:
             create_dir = questionary.confirm(
-                f"That directory doesn't exist. Should I try to create it? ( {project_dir} )"
+                f"That directory doesn't exist. Should I try to create it? ( {project_dir} )",
+                default=True,
+                style=anydev_qsty_styles
             ).unsafe_ask()
 
             if create_dir:
@@ -163,12 +167,14 @@ class ConfigureServices:
     def prompt_restart(self) -> None:
         # Ask the user if they want to (re)start the service containers
         restart_services = questionary.confirm(
-            "Do you want to (re)start the service containers now?"
+            "Do you want to (re)start the service containers now?",
+            default=True,
+            style=anydev_qsty_styles
         ).unsafe_ask()
 
         if restart_services:
             typer.secho("Stopping any running service containers...", fg=typer.colors.YELLOW, bold=True)
-            subprocess.run(['docker', 'compose', '--profile', '"*"', 'down'], cwd=self.config.cli_root_dir)
+            subprocess.run(['docker', 'compose', '--profile', '*', 'down'], cwd=self.config.cli_root_dir)
 
             typer.secho(
                 "Starting your service containers...",

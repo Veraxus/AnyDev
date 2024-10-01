@@ -21,7 +21,6 @@ def install():
 @main.command("config", hidden=True)
 def configure():
     """Add or remove services from your environments."""
-    print('Warning: Work in progress.')
     services = ConfigureServices()
     services.configure()
 
