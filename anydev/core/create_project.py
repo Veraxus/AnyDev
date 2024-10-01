@@ -182,7 +182,7 @@ class CreateProject:
 
         # Change the value of the HOSTNAME variable
         set_key(dotenv_path, 'HOSTNAME', self.entered_project_hostname)
-        set_key(dotenv_path, 'COMPOSE_PROJECT_NAME', f"{self.sanitized_project_title}.site.test")
+        set_key(dotenv_path, 'COMPOSE_PROJECT_NAME', f"anydev-{self.entered_project_hostname}")
 
     def _create_env_file(self) -> None:
         """Copy .env.example to .env"""
