@@ -4,11 +4,12 @@ import re
 import subprocess
 import typer
 
-from functools import wraps
+from anydev.configuration import Configuration
+from anydev.core.cli_output import CliOutput
 from dotenv import load_dotenv, dotenv_values
-
-from core.cli_output import CliOutput
-
+from functools import wraps
+from rich.table import Table
+from rich.console import Console
 
 class ProjectHelpers:
     """Helper functions for AnyDev projects."""
@@ -51,7 +52,7 @@ class ProjectHelpers:
         # Check if the ANYDEV variable is present and "truthy"
         anydev_value = env_vars.get("ANYDEV")
         if anydev_value is None or str(anydev_value).lower() not in ["true", "1", "yes"]:
-            CliOutput.warning(f"Could not verify project. ANYDEV variable is not present or enabled in {env_file}")
+            CliOutput.warning(f"Could not verify project! ANYDEV variable is not present or enabled in env file(s).")
             return False
 
         return True
@@ -88,7 +89,7 @@ class ProjectHelpers:
         if result.returncode != 0:
             CliOutput.error('Failed to start project!', True, result.returncode)
         else:
-            CliOutput.success('Project started!', True)
+            CliOutput.success('Project containers successfully started!')
 
     @staticmethod
     def stop_project(path: str = '.') -> None:
@@ -152,3 +153,21 @@ class ProjectHelpers:
             CliOutput.info('Logs tailed. Press Ctrl+C to exit.')
         else:
             CliOutput.error('The project is not currently running.', True)
+
+    @staticmethod
+    def list_projects() -> None:
+        table = Table(title="AnyDev Projects")
+
+        table.add_column("Project", justify="left", style="cyan", no_wrap=True)
+        table.add_column("Template", justify="left", style="magenta")
+        table.add_column("Path", justify="left", style="green")
+
+        projects = Configuration().get_registered_projects()
+
+        for name, details in projects.items():
+            path = details.get('path', 'Unknown')
+            template = details.get('template', 'Unknown')
+            table.add_row(name, template, path)
+
+        console = Console()
+        console.print(table)

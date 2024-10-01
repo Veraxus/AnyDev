@@ -3,9 +3,11 @@ import questionary
 import re
 import shutil
 import typer
+import webbrowser
 from anydev.configuration import Configuration
 from anydev.core.cli_output import CliOutput
 from anydev.core.project_helpers import ProjectHelpers
+from anydev.core.questionary_styles import anydev_qsty_styles
 from dotenv import set_key, get_key
 
 
@@ -63,8 +65,9 @@ class CreateProject:
         projects_dir = self.config.get_project_directory()
         current_directory = os.getcwd()
         if current_directory != projects_dir:
+            CliOutput.alert("Current directory is not your configured projects directory!")
             if not typer.confirm(
-                f"Current directory ({current_directory}) is not your configured projects directory. Should I create it there, instead ({projects_dir})?",
+                f"Use your project directory instead? (N will create here)",
                 default=True
             ):
                 # Use the current directory
@@ -105,10 +108,10 @@ class CreateProject:
         """Handles interactive process of copying template files into project directory."""
 
         # Dynamically fetch templates from template directory
-        template_dir = self.config.templates_dir_path
+        template_dir = self.config.templates_dir
         try:
             template_dir_contents = os.listdir(template_dir)
-            templates = [name for name in template_dir_contents if os.path.isdir(template_dir, name)]
+            templates = [name for name in template_dir_contents if os.path.isdir(template_dir + "/" + name)]
         except FileNotFoundError:
             CliOutput.error(f"Templates directory not found at '{template_dir}'.", False)
         except PermissionError:
@@ -119,7 +122,7 @@ class CreateProject:
             "Which template do you want to use?",
             choices=templates,
             use_indicator=True,
-            style=self.config.questionary_style
+            style=anydev_qsty_styles
         ).unsafe_ask()
 
         # Copy template to target directory
@@ -164,6 +167,9 @@ class CreateProject:
             CliOutput.success("Project configured and started!")
             CliOutput.success(f"URL: https://{self.entered_project_hostname}.site.test")
             CliOutput.success(f"Project Location: {self.project_path}")
+
+            # TODO: Make optional?
+            webbrowser.open(f"https://{self.entered_project_hostname}.site.test")
         else:
             CliOutput.alert("Project configuration completed.")
         raise typer.Exit(code=0)
@@ -176,12 +182,7 @@ class CreateProject:
 
         # Change the value of the HOSTNAME variable
         set_key(dotenv_path, 'HOSTNAME', self.entered_project_hostname)
-
-        # Confirm!
-        confirm_value = get_key(dotenv_path, 'HOSTNAME')
-
-        if confirm_value != self.entered_project_hostname:
-            raise ValueError(f"Failed to set HOSTNAME. Expected '{self.entered_project_hostname}', but got '{confirm_value}'")
+        set_key(dotenv_path, 'COMPOSE_PROJECT_NAME', f"{self.sanitized_project_title}.site.test")
 
     def _create_env_file(self) -> None:
         """Copy .env.example to .env"""

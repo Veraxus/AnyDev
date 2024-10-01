@@ -1,8 +1,9 @@
 import typer
 
+from anydev.core.cli_output import CliOutput
 from anydev.core.command_alias_group import CommandAliasGroup
+from anydev.core.create_project import CreateProject
 from anydev.core.project_helpers import ProjectHelpers
-from core.cli_output import CliOutput
 
 # Initialize Typer for the project sub-commands
 cmd = typer.Typer(
@@ -15,7 +16,6 @@ cmd = typer.Typer(
 @cmd.command('c | create')
 def create():
     """Create a new project."""
-    from anydev.core.create_project import CreateProject
     project_creator = CreateProject()
     project_creator.prompt()
 
@@ -28,10 +28,9 @@ def add():
 
 @cmd.command('l | list')
 @cmd.command('ls', hidden=True)
-@ProjectHelpers.validate_project
 def list_all():
     """List all projects."""
-    print('Not yet implemented.')
+    ProjectHelpers.list_projects()
 
 
 @cmd.command('u | up')

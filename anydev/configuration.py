@@ -1,10 +1,9 @@
 import os
 import platform
 import shutil
-import typer
 import yaml
 
-from core.cli_output import CliOutput
+from anydev.core.cli_output import CliOutput
 
 
 class Configuration:
@@ -125,8 +124,10 @@ class Configuration:
 
     def get_project_directory(self) -> None or str:
         """Gets the configured project directory."""
-        return self._configs.get('projects_path', self.default_projects_dir) if self._configs \
+        directory = self._configs.get('projects_path', self.default_projects_dir) if self._configs \
             else self.default_projects_dir
+
+        return directory.strip()
 
     def set_project_directory(self, project_directory: str = '') -> None:
         """
@@ -136,13 +137,14 @@ class Configuration:
             project_directory (str): The path to the project directory. If an empty string is provided, the 'organize_projects'
             configuration will be set to False.
         """
-        self._configs['projects_path'] = project_directory
+        self._configs['projects_path'] = project_directory.strip()
         if project_directory.strip() == '':
             self._configs['organize_projects'] = False
         # self.save_configuration()
 
     def get_projects_organized(self) -> bool:
-        """Checks if projects are organized as per the configuration.
+        """
+        Checks whether project organization is enabled or disabled
 
         Returns:
             bool: True if the projects are set to be organized, False otherwise.
@@ -166,6 +168,10 @@ class Configuration:
         self._configs['projects'][name]['path'] = path
         self._configs['projects'][name]['template'] = template
         self.save()
+
+    def get_registered_projects(self) -> dict:
+        return self._configs.get('projects', {}) if self._configs \
+            else {}
 
     def get_architecture(self) -> None or str:
         # Already set, return
