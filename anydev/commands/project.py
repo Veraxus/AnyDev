@@ -71,6 +71,6 @@ def terminal(
     ProjectHelpers.open_shell(shell_command)
 
 
-@cmd.command('b | bash', hidden=)
+@cmd.command('b | bash', hidden=True)
 def bash():
     terminal(shell_command="/bin/bash")
