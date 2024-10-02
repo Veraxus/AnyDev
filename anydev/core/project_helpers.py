@@ -30,7 +30,7 @@ class ProjectHelpers:
     def is_project(path: str = '.') -> bool:
         """Check if the current directory is an AnyDev project."""
 
-        # Check for .env files....
+        # Check for .env files (prefer example)....
         env_file = None
         if os.path.isfile(path + '/.env.example'):
             env_file = path + '/.env.example'
@@ -39,7 +39,10 @@ class ProjectHelpers:
 
         # No env file means no flag. Not our project.
         if not env_file:
-            CliOutput.warning("Current directory is not a valid AnyDev project.")
+            if path == os.getcwd():
+                CliOutput.warning("Current directory is not an AnyDev project!")
+            else:
+                CliOutput.warning(f"Directory {path} is not an AnyDev project!")
             return False
 
         try:
@@ -49,10 +52,21 @@ class ProjectHelpers:
         except Exception as e:
             CliOutput.error(f"Could not parse environment file: {env_file}, {e}", True)
 
+        invalid_env_vars = 0
+
         # Check if the ANYDEV variable is present and "truthy"
         anydev_value = env_vars.get("ANYDEV")
         if anydev_value is None or str(anydev_value).lower() not in ["true", "1", "yes"]:
-            CliOutput.warning(f"Could not verify project! ANYDEV variable is not present or enabled in env file(s).")
+            CliOutput.warning(f"ANYDEV variable is not present or enabled in env file(s).")
+            invalid_env_vars += 1
+
+        anydev_template = env_vars.get("ANYDEV_TEMPLATE")
+        if anydev_template is None:
+            CliOutput.warning(f"ANYDEV_TEMPLATE variable is not present in env file(s).")
+            invalid_env_vars += 1
+
+        if invalid_env_vars > 0:
+            CliOutput.error("Current directory is not a valid AnyDev project.", False)
             return False
 
         return True
@@ -65,11 +79,41 @@ class ProjectHelpers:
         def wrapper(*args, **kwargs):
             # Execute is_project before the function
             if ProjectHelpers.is_project():
+                config = Configuration()
+                project_details = ProjectHelpers.get_project_details()
+                known_projects = config.get_registered_projects()
+                if project_details["name"] not in known_projects:
+                    # Project isn't registered yet. So remember it.
+                    config.add_project(
+                        project_details["name"],
+                        project_details["path"],
+                        project_details["template"]
+                    )
+                    config.save()
+                    CliOutput.success(f"Project '{project_details['name']}' registered successfully.")
+
                 return f(*args, **kwargs)
             else:
-                CliOutput.error("Current directory is not a valid AnyDev project.", True)
+                CliOutput.error("Directory is not a valid AnyDev project.", True)
 
         return wrapper
+
+    @staticmethod
+    def get_project_details() -> dict:
+        """
+        Gets information about the current project.
+        Always validate before calling!
+        """
+
+        env_file = dotenv_values(os.path.join(os.getcwd(), '.env.example'))
+
+        project_details = {
+            "name":     os.path.basename(os.getcwd()),
+            "path":     os.path.abspath(os.getcwd()),
+            "template": env_file.get("ANYDEV_TEMPLATE", "Invalid")
+        }
+
+        return project_details
 
     @staticmethod
     def open_shell(shell_command: str) -> None:
@@ -164,10 +208,26 @@ class ProjectHelpers:
 
         projects = Configuration().get_registered_projects()
 
+        # Remove any project whose path doesn't validate
+        projects_to_remove = []
+
+        # Process and validate registered projects
         for name, details in projects.items():
             path = details.get('path', 'Unknown')
             template = details.get('template', 'Unknown')
-            table.add_row(name, template, path)
+            if ProjectHelpers.is_project(path):
+                table.add_row(name, template, path)
+            else:
+                projects_to_remove.append(name)
+                CliOutput.alert(f"Project {name} is no longer valid. Removing it from tracked projects.")
 
+        # TODO: Make project validation optional?
+        # Remove invalid projects from the configuration
+        config = Configuration()
+        for project_name in projects_to_remove:
+            config.unregister_project(project_name)
+        config.save()
+
+        # Output the table
         console = Console()
         console.print(table)

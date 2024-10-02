@@ -173,6 +173,13 @@ class Configuration:
         return self._configs.get('projects', {}) if self._configs \
             else {}
 
+    def unregister_project(self, name) -> None:
+        if 'projects' in self._configs:
+            if name in self._configs['projects']:
+                del self._configs['projects'][name]
+                self.save()
+                CliOutput.success(f"Removed project {name} from settings.")
+
     def get_architecture(self) -> None or str:
         # Already set, return
         if self._arch:
