@@ -69,3 +69,8 @@ def terminal(
     """Open command for the current project container."""
     CliOutput.info(f"Opening terminal with {shell_command}")
     ProjectHelpers.open_shell(shell_command)
+
+
+@cmd.command('b | bash', hidden=)
+def bash():
+    terminal(shell_command="/bin/bash")
