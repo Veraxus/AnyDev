@@ -4,11 +4,12 @@ import re
 import shutil
 import typer
 import webbrowser
+
+from anydev.commands.project_helpers import ProjectHelpers
 from anydev.configuration import Configuration
 from anydev.core.cli_output import CliOutput
-from anydev.core.project_helpers import ProjectHelpers
 from anydev.core.questionary_styles import anydev_qsty_styles
-from dotenv import set_key, get_key
+from dotenv import set_key
 
 
 class CreateProject:
@@ -48,7 +49,8 @@ class CreateProject:
         """
 
         # Initial questions!
-        self.entered_project_hostname = typer.prompt('Enter a simple hostname for your project (e.g. "foo", "bar", "foo-bar")')
+        self.entered_project_hostname = typer.prompt(
+            'Enter a simple hostname for your project (e.g. "foo", "bar", "foo-bar")')
         if not typer.confirm(
                 f"Do you want to use the default folder name ({self.entered_project_hostname}.site.test)?",
                 default=True
@@ -67,8 +69,8 @@ class CreateProject:
         if current_directory != projects_dir:
             CliOutput.alert("Current directory is not your configured projects directory!")
             if not typer.confirm(
-                f"Use your project directory instead? (N will create here)",
-                default=True
+                    f"Use your project directory instead? (N will create here)",
+                    default=True
             ):
                 # Use the current directory
                 self.project_path = os.path.join(current_directory, self.sanitized_project_title)
@@ -84,7 +86,8 @@ class CreateProject:
             # The directory already exists!!!
             if os.listdir(self.project_path):
                 # The directory is NOT empty. Abort.
-                CliOutput.error(f"Directory '{os.path.basename(self.project_path)}' already exists and is not empty. Please choose a different name.")
+                CliOutput.error(
+                    f"Directory '{os.path.basename(self.project_path)}' already exists and is not empty. Please choose a different name.")
                 raise typer.Exit(code=1)
             else:
                 # Hey, the directory was empty! Use it?
@@ -138,7 +141,6 @@ class CreateProject:
 
         # Is something wrong with template path?
         if not os.path.exists(source_template_path):
-
             CliOutput.error(f"Template directory '{source_template_path}' not found.", True)
 
         try:

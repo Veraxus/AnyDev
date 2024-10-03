@@ -1,30 +1,17 @@
-import json
 import os
 import re
 import subprocess
-import typer
 
 from anydev.configuration import Configuration
 from anydev.core.cli_output import CliOutput
+from anydev.core.docker_controls import DockerHelpers
 from dotenv import load_dotenv, dotenv_values
 from functools import wraps
-from rich.table import Table
 from rich.console import Console
+from rich.table import Table
 
 class ProjectHelpers:
     """Helper functions for AnyDev projects."""
-
-    @staticmethod
-    def is_running(path: str = '.') -> bool:
-        """Are the project containers currently running?"""
-        proc_command = ['docker', 'compose', 'ps', '--format', 'json']
-        result = subprocess.run(proc_command, capture_output=True, text=True, cwd=path)
-        try:
-            # If running, we will get valid JSON, otherwise, empty string
-            ps_output = json.loads(result.stdout)
-            return len(ps_output) > 0
-        except Exception:
-            return False
 
     @staticmethod
     def is_project(path: str = '.') -> bool:
@@ -124,29 +111,6 @@ class ProjectHelpers:
             CliOutput.error('Command failed: ' + ' '.join(proc_command), True)
 
     @staticmethod
-    def restart_composition(path: str = '.') -> None:
-        # Stop if already running
-        ProjectHelpers.stop_project(path)
-        # Start up
-        CliOutput.info('Asking Docker to start project...')
-        result = subprocess.run(['docker', 'compose', 'up', '-d'], cwd=path)
-        if result.returncode != 0:
-            CliOutput.error('Failed to start project!', True, result.returncode)
-        else:
-            CliOutput.success('Project containers successfully started!')
-
-    @staticmethod
-    def stop_project(path: str = '.') -> None:
-        if ProjectHelpers.is_running(path):
-            CliOutput.info('Asking Docker to stop project...')
-            try:
-                subprocess.run(['docker', 'compose', 'down'], check=True, cwd=path)
-            except subprocess.CalledProcessError as e:
-                CliOutput.error('Failed to stop project!', True, e.returncode)
-        else:
-            CliOutput.info('Project is not currently running.')
-
-    @staticmethod
     def sanitize_folder_name(folder_name: str) -> str:
         """
         Sanitizes a folder name by replacing any risky (non-allow-listed) characters.
@@ -189,7 +153,7 @@ class ProjectHelpers:
         Raises:
             typer.Exit: If the project is not running or the log tailing command fails.
         """
-        if ProjectHelpers.is_running():
+        if DockerHelpers.is_composition_running():
             proc_command = ['docker', 'compose', 'logs', service_name, '-f']
             result = subprocess.run(proc_command, cwd=path)
             if result.returncode != 0:

@@ -1,8 +1,13 @@
+import os.path
+import tomllib
 import typer
+
 from anydev.commands import project
+from anydev.commands import services
+from anydev.configuration import Configuration
+from anydev.core.cli_output import CliOutput
 from anydev.core.command_alias_group import CommandAliasGroup
 from anydev.core.configure_services import ConfigureServices
-from anydev.core.cli_output import CliOutput
 
 # Initialize CLI
 main = typer.Typer(
@@ -11,6 +16,13 @@ main = typer.Typer(
     cls=CommandAliasGroup
 )
 
+# Initialize configuration
+config = Configuration()
+
+
+# ==================
+# Top-level commands
+# ==================
 
 @main.command("i | install")
 def install():
@@ -26,9 +38,25 @@ def configure():
     services.configure()
 
 
+@main.command("v | version")
+def version():
+    """View current AnyDev version."""
+    with open(os.path.join(config.cli_root_dir, 'pyproject.toml'), "rb") as f:
+        data = tomllib.load(f)
+        CliOutput.info(data['tool']['poetry']['version'])
+
+
+# ==================
 # Sub-commands
+# ==================
+
+# Project commands
 main.add_typer(project.cmd, name="p | project")
-main.add_typer(project.cmd, name="proj", hidden=True)
+main.add_typer(project.cmd, name="pr | proj", hidden=True)
+
+# Shared services commands
+main.add_typer(services.cmd, name="s | services")
+main.add_typer(services.cmd, name="srv | svc | serv | service", hidden=True)
 
 if __name__ == '__main__':
     main()

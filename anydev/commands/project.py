@@ -3,7 +3,8 @@ import typer
 from anydev.core.cli_output import CliOutput
 from anydev.core.command_alias_group import CommandAliasGroup
 from anydev.core.create_project import CreateProject
-from anydev.core.project_helpers import ProjectHelpers
+from anydev.core.docker_controls import DockerHelpers
+from anydev.commands.project_helpers import ProjectHelpers
 
 # Initialize Typer for the project sub-commands
 cmd = typer.Typer(
@@ -39,7 +40,7 @@ def list_all():
 @ProjectHelpers.validate_project
 def start():
     """Start or restart an existing project."""
-    ProjectHelpers.restart_composition()
+    DockerHelpers.restart_composition()
 
 
 @cmd.command('d | down')
@@ -47,7 +48,7 @@ def start():
 @ProjectHelpers.validate_project
 def stop():
     """Stop a running project."""
-    ProjectHelpers.stop_project()
+    DockerHelpers.stop_composition()
 
 
 @cmd.command('g | logs')

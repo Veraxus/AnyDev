@@ -52,6 +52,8 @@ services:
       - ${HOME}/.anydev/mysql:/var/lib/mysql
     networks:
       - anydev
+    ports:
+      - "3306:3306"
     labels:
       - type=db
       - type=relational-db
@@ -68,6 +70,8 @@ services:
       - ${HOME}/.anydev/postgresql:/var/lib/postgresql/data
     networks:
       - anydev
+    ports:
+      - "5432:5432"
     labels:
       - type=db
       - type=relational-db
@@ -78,10 +82,16 @@ services:
     image: mongo:${VER_MONGO}
     container_name: anydev-mongo
     restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     volumes:
       - ${HOME}/.anydev/mongodb:/data/db
     networks:
       - anydev
+    ports:
+      # For management on host machine
+      - "27017:27017"
     labels:
       - type=db
       - type=nosql

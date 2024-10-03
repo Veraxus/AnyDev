@@ -1,11 +1,12 @@
 import os
 import questionary
-import subprocess
-import typer
 import yaml
+
 from anydev.configuration import Configuration
-from anydev.core.questionary_styles import anydev_qsty_styles
 from anydev.core.cli_output import CliOutput
+from anydev.core.docker_controls import DockerHelpers
+from anydev.core.questionary_styles import anydev_qsty_styles
+
 
 class ConfigureServices:
     """
@@ -139,18 +140,10 @@ class ConfigureServices:
             style=anydev_qsty_styles
         ).unsafe_ask()
 
+        # User accepted restart...
         if restart_services:
-            CliOutput.info("Asking Docker to stop all services...")
-            subprocess.run(['docker', 'compose', '--profile', '*', 'down'], cwd=self.config.cli_root_dir)
+            DockerHelpers.restart_composition(
+                self.config.cli_root_dir,
+                self.config.get_active_profiles()
+            )
 
-            # Create list of --profile args for all chosen services
-            profiles = self.config.get_active_profiles()
-            profile_args = []
-            for profile in profiles:
-                profile_args.extend(["--profile", profile])
-
-            # Start services with all selected profiles
-            CliOutput.info("Asking Docker to start chosen services...")
-            subprocess.run(["docker-compose"] + profile_args + ["up", "-d"], cwd=self.config.cli_root_dir)
-
-            # TODO: Exception handling
