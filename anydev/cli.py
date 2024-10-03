@@ -2,8 +2,8 @@ import os.path
 import tomllib
 import typer
 
-from anydev.commands import project
-from anydev.commands import services
+from anydev.commands import project_commands
+from anydev.commands import services_commands
 from anydev.configuration import Configuration
 from anydev.core.cli_output import CliOutput
 from anydev.core.command_alias_group import CommandAliasGroup
@@ -51,12 +51,12 @@ def version():
 # ==================
 
 # Project commands
-main.add_typer(project.cmd, name="p | project")
-main.add_typer(project.cmd, name="pr | proj", hidden=True)
+main.add_typer(project_commands.cmd, name="p | project")
+main.add_typer(project_commands.cmd, name="pr | proj", hidden=True)
 
 # Shared services commands
-main.add_typer(services.cmd, name="s | services")
-main.add_typer(services.cmd, name="srv | svc | serv | service", hidden=True)
+main.add_typer(services_commands.cmd, name="s | services")
+main.add_typer(services_commands.cmd, name="srv | svc | serv | service", hidden=True)
 
 if __name__ == '__main__':
     main()
