@@ -49,7 +49,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
-      - ${HOME}/.anydev/mysql:/var/lib/mysql
+      - ${HOME}/.anydev/mysql-${VER_MYSQL}:/var/lib/mysql
     networks:
       - anydev
     ports:
@@ -67,7 +67,7 @@ services:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ${HOME}/.anydev/postgresql:/var/lib/postgresql/data
+      - ${HOME}/.anydev/postgresql-${POSTGRES_PASSWORD}:/var/lib/postgresql/data
     networks:
       - anydev
     ports:
@@ -86,7 +86,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     volumes:
-      - ${HOME}/.anydev/mongodb:/data/db
+      - ${HOME}/.anydev/mongodb-${VER_MONGO}:/data/db
     networks:
       - anydev
     ports:
