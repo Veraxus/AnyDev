@@ -10,9 +10,6 @@ class DockerHelpers:
     @staticmethod
     def restart_composition(path: str = '.', profiles: list = []) -> None:
 
-        # DEBUG
-        print(path, profiles)
-
         # Stop if already running
         DockerHelpers.stop_composition(path)
 
@@ -50,9 +47,7 @@ class DockerHelpers:
 
         """
 
-        # DEBUG
         is_running = DockerHelpers.is_composition_running(path)
-        print(path, is_running)
 
         if is_running:
             CliOutput.info('Asking Docker to stop composition...')

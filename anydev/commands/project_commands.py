@@ -23,8 +23,8 @@ def create():
 
 @cmd.command('a | add')
 def add():
-    """Add an existing project directory to AnyDev's memory."""
-    print('Not yet implemented.')
+    """WIP. Add an existing project directory to AnyDev's memory."""
+    CliOutput.error('Not yet implemented.')
 
 
 @cmd.command('l | list')
