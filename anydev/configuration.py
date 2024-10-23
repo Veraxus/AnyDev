@@ -181,6 +181,11 @@ class Configuration:
                 CliOutput.success(f"Removed project {name} from settings.")
 
     def get_architecture(self) -> None or str:
+        """
+        Normalize architecture strings for simpler comparisons.
+        :return: 
+        """
+        
         # Already set, return
         if self._arch:
             return self._arch
@@ -202,7 +207,10 @@ class Configuration:
         return self._arch
 
     def get_os(self) -> None or str:
-
+        """
+        Detect OS, set normalized OS-related settings.
+        :return: 
+        """
         # Already looked up. Return it.
         if self._os:
             return self._os
@@ -235,7 +243,7 @@ class Configuration:
 
     def make_linux_dict(self) -> dict:
         """
-        Constructs a dictionary containing detailed information about the Linux distribution.
+        Constructs a dictionary containing detailed information about the current Linux distribution.
         
         Returns:
             dict: A dictionary containing details about the OS such as name, version, 
@@ -282,6 +290,19 @@ class Configuration:
         )
 
     def make_os_dict(self, os=None, distro=None, version=None, pkg_man=None, pkg_man_present=None):
+        """
+        Constructs a standardized dictionary for storing information about the current OS.
+
+        Args:
+            os (str, optional): The name of the operating system. Defaults to None.
+            distro (str, optional): The Linux distribution name. Defaults to None.
+            version (str, optional): The OS version. Defaults to None.
+            pkg_man (str, optional): The package manager name (for macOS and Windows). Defaults to None.
+            pkg_man_present (bool, optional): Whether the package manager is installed. Defaults to None.
+
+        Returns:
+            dict: A dictionary containing OS details, including the OS name, distro, version, and package manager information.
+        """
         return {
             'os':      os,  # Name of the OS
             'distro':  distro,  # The distro (for Linux systems

@@ -50,6 +50,8 @@ def version():
 # Sub-commands
 # ==================
 
+# TODO: Pass-through p commands when current dir is a recognized project
+
 # Project commands
 main.add_typer(project_commands.cmd, name="p | project")
 main.add_typer(project_commands.cmd, name="pr | proj", hidden=True)

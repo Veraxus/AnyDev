@@ -170,7 +170,7 @@ class CreateProject:
             CliOutput.success(f"URL: https://{self.entered_project_hostname}.site.test")
             CliOutput.success(f"Project Location: {self.project_path}")
 
-            # TODO: Make optional?
+            # TODO: Make opening browser optional?
             webbrowser.open(f"https://{self.entered_project_hostname}.site.test")
         else:
             CliOutput.alert("Project configuration completed.")

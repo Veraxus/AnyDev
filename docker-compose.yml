@@ -125,7 +125,7 @@ services:
 
 # TODO: elasticsearch
 # TODO: mariadb
-# TODO: selenium
+# TODO: selenium (has separate official arm & x86 images)
 # TODO: Prometheus, Grafana++?
 # TODO: Kibana?
 # TODO: rabbitmq?
