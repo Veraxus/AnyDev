@@ -2,8 +2,8 @@ import os.path
 import tomllib
 import typer
 
-from anydev.commands import project_commands
-from anydev.commands import services_commands
+from anydev.commands import project as project_commands
+from anydev.commands import services as services_commands
 from anydev.configuration import Configuration
 from anydev.core.cli_output import CliOutput
 from anydev.core.command_alias_group import CommandAliasGroup

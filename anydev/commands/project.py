@@ -1,4 +1,5 @@
 import typer
+import webbrowser
 
 from anydev.core.cli_output import CliOutput
 from anydev.core.command_alias_group import CommandAliasGroup
@@ -75,3 +76,19 @@ def terminal(
 @cmd.command('b | bash', hidden=True)
 def bash():
     terminal(shell_command="/bin/bash")
+
+
+@cmd.command('v | view')
+@cmd.command('browser', hidden=True)
+@ProjectHelpers.validate_project
+def browser():
+    """Open default browser to current project's .site.test URL."""
+    project_details = ProjectHelpers.get_project_details()
+    if 'name' in project_details:
+        project_name = project_details['name']
+        url = f"https://{project_name}"
+        CliOutput.info(f"Opening {url} in your default browser.")
+        webbrowser.open(url)
+    else:
+        CliOutput.error("Project name not found. Cannot open the browser.")
+

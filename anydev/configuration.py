@@ -21,6 +21,7 @@ class Configuration:
 
     __instance = None
 
+    # We sniff out package managers rather than mapping them to distros
     PKG_MAN_MAP = [
         'apt',  # Debian, Ubuntu
         'dnf',  # Fedora
@@ -42,7 +43,7 @@ class Configuration:
 
     def _initialize(self):
         """
-        Sets class properties when instantiated.
+        Sets class properties so __new__ can stay clean and readable.
         """
 
         # == Important AnyDev Core Locations ==
