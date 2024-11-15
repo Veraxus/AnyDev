@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import webbrowser
 
 from anydev.configuration import Configuration
 from anydev.core.cli_output import CliOutput
@@ -195,3 +196,15 @@ class ProjectHelpers:
         # Output the table
         console = Console()
         console.print(table)
+
+    @staticmethod
+    def view_site() -> None:
+        """Open default browser to current project's .site.test URL."""
+        project_details = ProjectHelpers.get_project_details()
+        if 'name' in project_details:
+            project_name = project_details['name']
+            url = f"https://{project_name}"
+            CliOutput.info(f"Opening {url} in your default browser.")
+            webbrowser.open(url)
+        else:
+            CliOutput.error("Project name not found. Cannot open the browser.")
