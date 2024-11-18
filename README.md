@@ -85,6 +85,11 @@ ad() {
 #### 5. Ready to go!
 Access commands with `anydev ...` or create a convenient alias in your shell profile.
 
+If you need to configure the environment with your IDE, you can get the poetry env path with...
+```bash
+poetry env info --path
+```
+
 ### Project Goals
 * It must be extremely easy to get up and running, even for novices.
 * It must support multiple applications simultaneously, accessible via friendly host names.
