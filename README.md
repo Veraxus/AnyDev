@@ -50,17 +50,6 @@ To get started:
    sudo mkdir -p /etc/resolver && \
    echo "nameserver 127.0.0.1\nport 53" | sudo tee /etc/resolver/site.test
    ```
-7. Start the support services:
-   ```bash
-   docker compose up -d
-   ```
-   Also note that you can use profiles to start multiple specific services or stacks:
-   ```bash
-   docker compose \
-      --profile mysql \
-      --profile redis \
-      up -d
-   ```
 
 #### 3. Start Shared Services
 
@@ -68,10 +57,18 @@ To get started:
    ```bash
    cp .env.example .env
    ```
-2. Starting the services (LAMP stack)...
+2. Start the support services:
    ```bash
-   docker compose --profile lamp up -d
+   docker compose up -d
    ```
+   Also note that you can use profiles to start multiple specific services:
+   ```bash
+   docker compose \
+      --profile mysql \
+      --profile redis \
+      up -d
+   ```
+
 ### 4. Create shortcut
 Be sure to create a shortcut in your profile so that you can run AnyDev from anywhere (it's supposed to be context-sensitive, after all)
 ```bash
