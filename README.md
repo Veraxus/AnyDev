@@ -1,6 +1,19 @@
 # AnyDev
 Create portable, containerized local development environments for any stack.
 
+## Features & Architecture
+AnyDev allows you to run web applications on your own computer using HTTPS and unique domains, so you can access any number of projects with local-only domains like https://*.site.test
+
+To accomplish this, we use [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq) for host + internal DNS and [traefik](https://doc.traefik.io/traefik/) for Docker-based routing. The host machine needs a few dependencies as well, to ensure HTTPS works correctly from your web browser: this includes [mkcert](https://github.com/FiloSottile/mkcert) and some minimal host DNS/resolver configuration.
+
+Additionally, AnyDev can easily and automatically run shared services (like Mongo, MySQL, Redis, etc), with everything pre-configured for you.
+
+AnyDev also includes Docker-based "application templates" for a wide variety of languages and stacks, so you have an easy single-command starting point for new projects, as well as seamlessly running multiple projects simultaneously, using both shared AnyDev services or application-specific ones.
+
+MailHog is also included for local email testing, with a web UI available at https://mailhog.site.test.
+
+Note: The goal is for AnyDev to work on all major platforms: Mac, Windows, and Linux. Currently, Windows is not yet supported due to its unique DNS and configuration limitations. If you would like to contribute to enabling Windows support, PRs are welcome!
+
 ## Usage
 AnyDev is in an alpha state and is not currently ready for prime-time. Currently, this is very MacOS-centric, though
 Windows and Linux support is planned. To get up and running right away, see the [contributing](#contributing) section

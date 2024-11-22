@@ -47,8 +47,8 @@ services:
     container_name: anydev-mailhog
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=mail.site.test
-      - MH_HOSTNAME=mail.site.test
+      - VIRTUAL_HOST=mailhog.site.test
+      - MH_HOSTNAME=mailhog.site.test
       - MH_API_BIND_ADDR=0.0.0.0:80
       - MH_UI_BIND_ADDR=0.0.0.0:80
       - MH_SMTP_BIND_ADDR=0.0.0.0:25
@@ -60,9 +60,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.mailhog.loadbalancer.server.port=80"
-      - "traefik.http.routers.php-mail.rule=Host(`mail.site.test`)"
+      - "traefik.http.routers.php-mail.rule=Host(`mailhog.site.test`)"
       - "traefik.http.routers.php-mail.entrypoints=web"  # HTTP entry point
-      - "traefik.http.routers.php-mail-secure.rule=Host(`mail.site.test`)"  # HTTPS entry point
+      - "traefik.http.routers.php-mail-secure.rule=Host(`mailhog.site.test`)"  # HTTPS entry point
       - "traefik.http.routers.php-mail-secure.entrypoints=websecure"
       - "traefik.http.routers.php-mail-secure.tls=true"
       - type=email
