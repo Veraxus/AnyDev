@@ -60,11 +60,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.mailpit.loadbalancer.server.port=80"
+      # Configure smtp.site.test
       - "traefik.http.routers.mailpit-smtp.rule=Host(`smtp.site.test`)"
       - "traefik.http.routers.mailpit-smtp.entrypoints=web"  # HTTP entry point
       - "traefik.http.routers.mailpit-smtp-secure.rule=Host(`smtp.site.test`)"  # HTTPS entry point
       - "traefik.http.routers.mailpit-smtp-secure.entrypoints=websecure"
       - "traefik.http.routers.mailpit-smtp-secure.tls=true"
+      # Configure mail.site.test (convenient alias)
       - "traefik.http.routers.mailpit-mail.rule=Host(`mail.site.test`)"
       - "traefik.http.routers.mailpit-mail.entrypoints=web"  # HTTP entry point for mail.site.test
       - "traefik.http.routers.mailpit-mail-secure.rule=Host(`mail.site.test`)"  # HTTPS entry point for mail.site.test
