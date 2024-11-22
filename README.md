@@ -10,7 +10,7 @@ Additionally, AnyDev can easily and automatically run shared services (like Mong
 
 AnyDev also includes Docker-based "application templates" for a wide variety of languages and stacks, so you have an easy single-command starting point for new projects, as well as seamlessly running multiple projects simultaneously, using both shared AnyDev services or application-specific ones.
 
-MailHog is also included for local email testing, with a web UI available at https://mailhog.site.test.
+[MailPit](https://mailpit.axllent.org/docs/configuration/runtime-options/) is also included for local email testing, with a web UI available at https://mailpit.site.test.
 
 Note: The goal is for AnyDev to work on all major platforms: Mac, Windows, and Linux. Currently, Windows is not yet supported due to its unique DNS and configuration limitations. If you would like to contribute to enabling Windows support, PRs are welcome!
 
